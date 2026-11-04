@@ -10,6 +10,8 @@ The C++20 coroutine API and LGPL-3.0-or-later license remain unchanged.
 - Updated badges, download/setup links, issue/security links and HTTP User-Agent.
 - Preserved original author/copyright notices and immutable published tags/assets.
 - Added a regression check for consistent package/runtime repository identity.
+- Track VERSION as a CMake configure dependency so incremental builds regenerate
+  version headers, package metadata and versioned shared-library names.
 
 ## Command correctness and performance
 

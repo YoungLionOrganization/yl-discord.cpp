@@ -5,6 +5,10 @@ asynchronous DNS and ws/wss, and nlohmann/json >= 3.11. Ninja is required by the
 provided presets. Python >= 3.10 is needed for release tooling, not the C++ library.
 The first fallback Asio download needs Git and network access.
 
+VERSION is a CMake configure dependency: an incremental build after a version
+change regenerates public version headers, package metadata and runtime names.
+Shared consumers must be rebuilt for the full versioned pre-1.0 library name.
+
 ## Dependency discovery
 
 The build first accepts an existing `asio::asio` CMake target/config package,

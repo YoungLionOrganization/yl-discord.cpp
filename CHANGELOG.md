@@ -6,6 +6,7 @@ Versions follow [MAJOR.MINOR.PATCH](docs/VERSIONING.md).
 
 - Move canonical repository/package/runtime links to YoungLionOrganization.
 - Preserve original attribution and immutable release history after the transfer.
+- Regenerate CMake version headers/package/runtime names when VERSION changes.
 - Resolve command names before parsing unknown argument tails.
 - Preserve command/alias identity when argument syntax fails.
 - Remove combined-token vector allocation and first-element shifting from dispatch.

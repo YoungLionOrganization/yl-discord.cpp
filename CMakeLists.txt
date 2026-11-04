@@ -2,6 +2,8 @@
 # Copyright (C) 2026 Cavanshirpro
 # Licensed under LGPL-3.0-or-later; see NOTICE, LICENSE and COPYING.
 cmake_minimum_required(VERSION 3.25)
+# file(STRINGS) alone does not make VERSION a configure dependency.
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/VERSION")
 file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/VERSION" YL_DISCORD_VERSION LIMIT_COUNT 1)
 project(yl_discord VERSION ${YL_DISCORD_VERSION} DESCRIPTION "Coroutine-first Discord bot library"
     HOMEPAGE_URL "https://github.com/YoungLionOrganization/yl-discord.cpp" LANGUAGES CXX)

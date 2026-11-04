@@ -35,6 +35,8 @@ synthetic credentials and local fixtures.
 - [x] Preserve canonical command/alias identity on argument syntax errors.
 - [x] Resolve command names before parsing unknown-command arguments; avoid
   allocating and shifting a combined command/argument vector.
+- [x] Track VERSION changes in incremental CMake builds so generated versions
+  and shared-library names cannot remain stale.
 - [x] Add regression coverage and run all local native/network suites.
 - [ ] Verify package consumers and the cross-platform release CI matrix.
 - [ ] Record before/after measurements with the same compiler, configuration and
