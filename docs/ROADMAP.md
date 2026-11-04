@@ -10,7 +10,7 @@ for small bots and exposes clear ownership, resource limits and extension points
 for advanced applications. Correctness and measured resource use take priority
 over broad performance claims or quickly matching every discord.py feature.
 
-## Current foundation — v0.1.0 through v0.4.0
+## Current foundation — v0.1.0 through v0.4.1
 
 - [x] C++20 tasks, one event loop, Client/Bot subclasses and Cog-owned callbacks.
 - [x] Live TLS REST/Gateway, heartbeats, reconnect/resume and server-driven limits.
@@ -30,7 +30,7 @@ synthetic credentials and local fixtures.
 
 - [x] Update repository URLs, package sources, badges and HTTP identification for
   YoungLionOrganization; retain original copyright attribution.
-- [ ] Verify generated package downloads, transferred-repository Actions and
+- [x] Verify generated package downloads, transferred-repository Actions and
   release publication under the organization.
 - [x] Preserve canonical command/alias identity on argument syntax errors.
 - [x] Resolve command names before parsing unknown-command arguments; avoid
@@ -38,13 +38,20 @@ synthetic credentials and local fixtures.
 - [x] Track VERSION changes in incremental CMake builds so generated versions
   and shared-library names cannot remain stale.
 - [x] Add regression coverage and run all local native/network suites.
-- [ ] Verify package consumers and the cross-platform release CI matrix.
+- [x] Verify package consumers and the cross-platform release CI matrix.
 - [x] Record before/after measurements with the same compiler, configuration and
   workload; retain raw data without generalizing synthetic results to live bots.
 
 Exit criteria: regression coverage and native/package CI pass; source archives
 contain the intended files; an immutable patch release publishes with valid
 checksums. Public layout/interface changes require a minor version.
+
+The first maintenance batch is complete in
+[v0.4.1](https://github.com/YoungLionOrganization/yl-discord.cpp/releases/tag/v0.4.1).
+The [release run](https://github.com/YoungLionOrganization/yl-discord.cpp/actions/runs/41886169544)
+passed; all eight downloaded release assets and seven SHA-256 entries were checked,
+and both source archives were validated. The initial MSYS2 mirror timeout was
+resolved by rerunning the failed job; the release checks were retained.
 
 ## Runtime reliability and resource controls (proposed v0.5)
 

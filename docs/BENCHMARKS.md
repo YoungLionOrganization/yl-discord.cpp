@@ -74,6 +74,8 @@ be kept explicit when comparing or repeating the results.
 The benchmark tools were added after the immutable v0.4.0 release tag. Use a
 checkout of `54fce8924f2bb7d33d3ea58ca181a2dd4be5bdd8` or a later main commit
 containing `benchmarks/`; the v0.4.0 release source archive does not include them.
+The v0.4.1 source releases include the tools and the earlier recorded samples;
+the newer maintenance comparison above is available on main.
 
 Configure with the same [dependencies](BUILDING.md) as the library, using Release:
 
