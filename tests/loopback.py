@@ -87,7 +87,7 @@ def handler_for(state):
         def parse_request(self):
             valid = super().parse_request()
             if valid:
-                state.check(self.headers.get('User-Agent') == f'DiscordBot (https://github.com/Cavanshirpro/yl-discord.cpp, {VERSION})',
+                state.check(self.headers.get('User-Agent') == f'DiscordBot (https://github.com/YoungLionOrganization/yl-discord.cpp, {VERSION})',
                             'HTTP User-Agent version differs from VERSION')
             return valid
 

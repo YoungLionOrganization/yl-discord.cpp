@@ -1,62 +1,48 @@
-# yl-discord.cpp v0.4.0
+# yl-discord.cpp v0.4.1
 
-This normal minor release adds bounded, buffered multipart uploads and explicit
-attachment editing. Package version: **0.4.0**.
+Maintenance release for the transfer to YoungLionOrganization and command parsing.
+The C++20 coroutine API and LGPL-3.0-or-later license remain unchanged.
 
-## Files and messages
+## Repository and packaging
 
-- FileUpload owns immutable shared byte buffers with independent filename,
-  description and content-type metadata. Copies do not duplicate large buffers.
-- Text and binary construction preserve embedded NULs. There are no implicit
-  filesystem reads, URL downloads or transcoding operations.
-- MessageOptions::files supports file-only sends/replies and attachment:// embeds.
-- REST uses libcurl MIME read/seek callbacks over the existing async multi engine,
-  without constructing a second full multipart byte string.
-- Server 429 retries use fresh upload cursors; uncertain writes are not retried.
-- MessageEditOptions requires explicit retained attachment IDs when adding files;
-  omitted fields preserve files, an empty retention vector clears/replaces them.
-- Response Attachment models retain IDs, names, uint64 sizes, descriptions, media
-  types and URL metadata. Message values remain owned snapshots.
-- MemoryTransport stores synthetic metadata and records upload/retention intent.
-  Unsupported older text-edit transports reject attachment edits explicitly.
+- Canonical repository: [YoungLionOrganization/yl-discord.cpp](https://github.com/YoungLionOrganization/yl-discord.cpp).
+- Updated CMake/Conan metadata, vcpkg/MSYS2 source generators and package templates.
+- Updated badges, download/setup links, issue/security links and HTTP User-Agent.
+- Preserved original author/copyright notices and immutable published tags/assets.
+- Added a regression check for consistent package/runtime repository identity.
 
-## Bounds and lifecycle
+## Command correctness and performance
 
-Typed limits are 20 MiB per file, 24 MiB combined new bytes and 10 total retained/
-new attachments. The multipart builder checks a 25 MiB request budget with 64 KiB
-reserved for framing; large JSON metadata can reduce the remaining file budget.
-Filename/MIME/description validation prevents control/header injection and rejects
-ambiguous upload labels. Discord still enforces its own current permissions,
-media checks and account/channel limits.
+- Resolve a command name before interpreting its argument tail. Unknown names
+  are ignored even if their unused arguments contain malformed quotes/escapes.
+- Preserve canonical command name, invoked alias and original Message when a
+  known command's argument syntax is invalid. The incomplete argument list is
+  not exposed as a successful parse.
+- Share token-scanning logic between command lookup and the public parser,
+  preserving quoted/escaped names, empty arguments and normal argument behavior.
+- Avoid allocating a combined command/argument vector and shifting all arguments
+  to remove its first element. This is a targeted synthetic-path optimization;
+  it does not establish a general live-bot speed advantage.
 
-Uploads share TLS validation, rate-limit queues, deadlines, User-Agent metadata
-and close cancellation. Tests cancel an active 8 MiB upload without waiting for
-the server to drain its socket. Rebuild consumers: public models extend in this minor.
+## Documentation and validation
 
-## Validation and distribution
+- Ordered roadmap with priorities, proposed milestones and completion criteria.
+- Offline benchmark tooling, raw samples and reproduction/interpretation guidance.
+- Regression coverage for unknown malformed tails, syntax-error Context identity,
+  quoted/escaped aliases and empty arguments.
+- Local validation: six CTest suites, including 13 core, 11 command, 15 event,
+  6 embed, 6 file and 16 network scenarios, plus 12 release-tool tests.
+- Publication requires Linux/Windows static/shared builds, sanitizer checks and
+  Conan, vcpkg and MINGW64/UCRT64 package consumers through the release workflow.
 
-Validation includes 13 core, 10 command, 15 event, 6 embed, 6 file, 16 local
-HTTP/WebSocket and 11 release-tool scenarios. Multipart fixtures verify binary
-bytes, UTF-8 names, NULs, 429 replay, retained/new/cleared files and file-only replies.
-Installed consumers exercise the new file payload across static/shared boundaries.
+No authenticated Discord smoke test was run. Existing dependency licenses and
+the documented experimental API/ABI policy still apply. Rebuild shared consumers
+for the versioned v0.4.1 runtime library.
 
-CI covers Linux GCC/Clang, Windows MSVC/MinGW, ASan/UBSan, Conan, vcpkg and native
-MSYS2 MINGW64/UCRT64. Six offline examples and a live ping bot compile; automated
-runs never contact Discord or load a real bot credential. Authenticated Discord
-smoke testing remains owner-initiated.
+## Downloads and guides
 
-Release assets include source ZIP/TAR.GZ, vcpkg overlay, native MINGW64/UCRT64
-packages, MSYS2 recipe, release notes and SHA256SUMS. Optional Conan remote upload
-requires owner-configured credentials; no central-registry listing is claimed.
-
-Slash commands, UI, stream/filesystem upload sources, progress hooks, broad guild/
-member APIs, voice, sharding and production caches remain planned. No general
-performance advantage over discord.py is claimed.
-
-- [Source ZIP](https://github.com/Cavanshirpro/yl-discord.cpp/releases/download/v0.4.0/yl-discord.cpp-v0.4.0.zip)
-- [Source TAR.GZ](https://github.com/Cavanshirpro/yl-discord.cpp/releases/download/v0.4.0/yl-discord.cpp-v0.4.0.tar.gz)
-- [Files guide](https://github.com/Cavanshirpro/yl-discord.cpp/blob/v0.4.0/docs/FILES.md)
-- [Upload example](https://github.com/Cavanshirpro/yl-discord.cpp/blob/v0.4.0/examples/upload_bot.cpp)
-- [Live setup](https://github.com/Cavanshirpro/yl-discord.cpp/blob/v0.4.0/docs/LIVE_BOTS.md)
-
-Licensed under **LGPL-3.0-or-later**.
+- [Source ZIP](https://github.com/YoungLionOrganization/yl-discord.cpp/releases/download/v0.4.1/yl-discord.cpp-v0.4.1.zip)
+- [Source TAR.GZ](https://github.com/YoungLionOrganization/yl-discord.cpp/releases/download/v0.4.1/yl-discord.cpp-v0.4.1.tar.gz)
+- [Roadmap](https://github.com/YoungLionOrganization/yl-discord.cpp/blob/v0.4.1/docs/ROADMAP.md)
+- [Commands](https://github.com/YoungLionOrganization/yl-discord.cpp/blob/v0.4.1/docs/COMMANDS.md)
+- [Benchmarks](https://github.com/YoungLionOrganization/yl-discord.cpp/blob/v0.4.1/docs/BENCHMARKS.md)

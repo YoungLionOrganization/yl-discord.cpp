@@ -5,7 +5,7 @@ and bounded retries. The broader Discord API remains under development.
 
 Report suspected vulnerabilities through GitHub's private vulnerability report
 feature when available:
-[report privately](https://github.com/Cavanshirpro/yl-discord.cpp/security/advisories/new).
+[report privately](https://github.com/YoungLionOrganization/yl-discord.cpp/security/advisories/new).
 If private reporting is unavailable, open an issue requesting a private channel
 without exploit details or secrets. No private email address or response-time
 guarantee is advertised.

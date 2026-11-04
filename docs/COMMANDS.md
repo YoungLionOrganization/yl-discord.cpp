@@ -5,6 +5,12 @@ Gateway messages and with the offline MemoryTransport. Names are case-sensitive;
 arguments support quoting and escaping. User messages invoke commands independently
 of `on_message()` overrides. Messages authored by bots never invoke commands.
 
+The command name is resolved before parsing the argument tail. Unknown names
+are ignored, even when their unused arguments contain malformed quotes. For a
+registered command, argument syntax errors reach `on_command_error()` with the
+canonical `command_name`, the actual `invoked_with` alias and original Message.
+On a syntax error, `args` is empty because no complete argument list was produced.
+
 ## Typed parameters
 
 ```cpp

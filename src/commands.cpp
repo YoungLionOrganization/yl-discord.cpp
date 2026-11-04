@@ -14,6 +14,40 @@ namespace {
 
 bool space(char value) { return std::isspace(static_cast<unsigned char>(value)) != 0; }
 
+// Consume one token so command lookup need not parse an unknown command's tail.
+bool next_argument(std::string_view& text, std::string& value) {
+    value.clear();
+    char quote = '\0';
+    bool escaped = false;
+    bool started = false;
+    std::size_t consumed = 0;
+    for (char c : text) {
+        ++consumed;
+        if (escaped) {
+            value += c;
+            escaped = false;
+        } else if (c == '\\' && quote != '\'') {
+            escaped = true;
+            started = true;
+        } else if (quote != '\0') {
+            if (c == quote) quote = '\0';
+            else value += c;
+        } else if (c == '\'' || c == '"') {
+            quote = c;
+            started = true;
+        } else if (space(c)) {
+            if (started) break;
+        } else {
+            value += c;
+            started = true;
+        }
+    }
+    if (escaped || quote != '\0')
+        throw ArgumentError(escaped ? "Trailing escape in command arguments" : "Unclosed quote in command arguments");
+    text.remove_prefix(consumed);
+    return started;
+}
+
 void validate_name(const std::string& name) {
     if (name.empty() || std::any_of(name.begin(), name.end(), [](char c) {
             return space(c) || c == '\'' || c == '"' || c == '\\';
@@ -69,42 +103,7 @@ struct Bot::Entry {
 std::vector<std::string> parse_arguments(std::string_view text) {
     std::vector<std::string> result;
     std::string current;
-    char quote = '\0';
-    bool escaped = false;
-    bool started = false;
-    for (char c : text) {
-        if (escaped) {
-            current += c;
-            escaped = false;
-        } else if (c == '\\' && quote != '\'') {
-            escaped = true;
-            started = true;
-        } else if (quote != '\0') {
-            if (c == quote) {
-                quote = '\0';
-            } else {
-                current += c;
-            }
-        } else if (c == '\'' || c == '"') {
-            quote = c;
-            started = true;
-        } else if (space(c)) {
-            if (started) {
-                result.push_back(std::move(current));
-                current.clear();
-                started = false;
-            }
-        } else {
-            current += c;
-            started = true;
-        }
-    }
-    if (escaped || quote != '\0') {
-        throw ArgumentError(escaped ? "Trailing escape in command arguments" : "Unclosed quote in command arguments");
-    }
-    if (started) {
-        result.push_back(std::move(current));
-    }
+    while (next_argument(text, current)) result.push_back(std::move(current));
     return result;
 }
 
@@ -293,16 +292,14 @@ task<> Bot::process_commands(Message message) {
     context.message = std::move(message);
     std::exception_ptr failure;
     try {
-        auto arguments = parse_arguments(std::string_view(context.message.content).substr(prefix_.size()));
-        if (arguments.empty()) co_return;
-        auto found = commands_.find(arguments.front());
+        auto remaining = std::string_view(context.message.content).substr(prefix_.size());
+        if (!next_argument(remaining, context.invoked_with)) co_return;
+        auto found = commands_.find(context.invoked_with);
         if (found == commands_.end()) co_return;
         // Keep callback/check captures and Cog alive across suspension and removal.
         auto entry = found->second;
         context.command_name = entry->command.name;
-        context.invoked_with = std::move(arguments.front());
-        arguments.erase(arguments.begin());
-        context.args = std::move(arguments);
+        context.args = parse_arguments(remaining);
         const auto checks = checks_;
         for (const auto& check : checks)
             if (!(co_await (*check)(context))) throw CheckFailure{};

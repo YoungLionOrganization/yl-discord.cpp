@@ -29,7 +29,7 @@ def main():
         return subprocess.check_output(["git", "show", f"{commit}:{name}"], cwd=ROOT)
 
     metadata = json.loads(committed("release.json"))
-    request = urllib.request.Request(f"https://github.com/Cavanshirpro/yl-discord.cpp/archive/{commit}.tar.gz", headers={"User-Agent": "yl-discord.cpp-release"})
+    request = urllib.request.Request(f"https://github.com/YoungLionOrganization/yl-discord.cpp/archive/{commit}.tar.gz", headers={"User-Agent": "yl-discord.cpp-release"})
     with urllib.request.urlopen(request, timeout=120) as response:
         data = response.read()
     with tarfile.open(fileobj=io.BytesIO(data), mode="r:gz") as archive:

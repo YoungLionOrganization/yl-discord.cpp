@@ -16,7 +16,7 @@ class YlDiscordConan(ConanFile):
     name = "yl-discord-cpp"
     description = "Coroutine-first C++20 Discord bot library"
     license = "LGPL-3.0-or-later"
-    url = "https://github.com/Cavanshirpro/yl-discord.cpp"
+    url = "https://github.com/YoungLionOrganization/yl-discord.cpp"
     homepage = url
     topics = ("discord", "cpp20", "coroutines", "asio")
     package_type = "library"

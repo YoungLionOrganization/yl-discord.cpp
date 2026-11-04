@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 3.25)
 file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/VERSION" YL_DISCORD_VERSION LIMIT_COUNT 1)
 project(yl_discord VERSION ${YL_DISCORD_VERSION} DESCRIPTION "Coroutine-first Discord bot library"
-    HOMEPAGE_URL "https://github.com/Cavanshirpro/yl-discord.cpp" LANGUAGES CXX)
+    HOMEPAGE_URL "https://github.com/YoungLionOrganization/yl-discord.cpp" LANGUAGES CXX)
 
 option(YL_DISCORD_BUILD_EXAMPLES "Build offline and live examples" ${PROJECT_IS_TOP_LEVEL})
 option(YL_DISCORD_BUILD_TESTS "Build offline tests" ${PROJECT_IS_TOP_LEVEL})

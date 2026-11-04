@@ -5,6 +5,7 @@ v0.1.0 remains the historical offline prerelease, v0.1.1 completes live messages
 and v0.2.0 adds the command toolkit and message operations.
 v0.3.0 adds event waits, removable listeners and rich messages.
 v0.4.0 adds bounded uploads and explicit attachment retention.
+v0.4.1 updates organization integration and command parsing.
 
 ## Prepare and publish automatically
 
@@ -25,8 +26,8 @@ Normal releases also become the latest release.
 Manual tag pushes and manual publication of an existing tag remain supported:
 
 ```sh
-git tag -a v0.4.0 -m "yl-discord.cpp v0.4.0"
-git push origin v0.4.0
+git tag -a v0.4.1 -m "yl-discord.cpp v0.4.1"
+git push origin v0.4.1
 ```
 
 Use one path per release. A manual `release-version` run is available when metadata
@@ -37,7 +38,7 @@ To retry publication of an existing tag, run `publish` from the Actions page or
 use GitHub CLI without creating another tag:
 
 ```sh
-gh workflow run publish.yml --ref main -f tag=v0.4.0
+gh workflow run publish.yml --ref main -f tag=v0.4.1
 ```
 
 This selects current workflow logic while building the frozen tagged source.
@@ -68,7 +69,7 @@ After committing:
 
 ```sh
 python scripts/package_source.py --ref HEAD
-python scripts/check_release.py --archive build/dist/yl-discord.cpp-v0.4.0.tar.gz
+python scripts/check_release.py --archive build/dist/yl-discord.cpp-v0.4.1.tar.gz
 ```
 
 Archives contain committed files only, excluding local credentials/build outputs

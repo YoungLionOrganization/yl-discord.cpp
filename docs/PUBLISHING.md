@@ -2,6 +2,11 @@
 
 ## GitHub Releases
 
+The canonical repository is `YoungLionOrganization/yl-discord.cpp`. After a
+transfer, check organization Actions policy and repository/environment secrets.
+Publication uses `github.repository`; package sources and HTTP identification
+use the organization URL. Existing published tags/assets remain immutable.
+
 Enable GitHub Actions for this repository. The release job requests
 `contents: write`; build/package jobs use read-only contents access. The standard
 GITHUB_TOKEN is sufficient for release creation/assets; no personal token is
@@ -58,4 +63,4 @@ requires the upstream MSYS2 process; no `pacman -S` availability is claimed.
 
 This repository currently publishes source/package assets and Markdown docs in
 GitHub. There is no separately hosted documentation website or automatic central
-registry submission. The v0.4.0 library includes live bot REST/Gateway transport.
+registry submission. The v0.4.1 library includes live bot REST/Gateway transport.

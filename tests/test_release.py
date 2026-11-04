@@ -26,6 +26,18 @@ class PublicationTests(unittest.TestCase):
     def test_current_metadata_and_links(self):
         self.assertEqual(validate(self.files), self.files["VERSION"].decode().strip())
 
+    def test_repository_identity_matches_package_and_runtime_sources(self):
+        repository = "YoungLionOrganization/yl-discord.cpp"
+        homepage = "https://github.com/" + repository
+        manifest = json.loads(self.files["packaging/vcpkg/vcpkg.json"])
+        self.assertEqual(manifest["homepage"], homepage)
+        for name in ("CMakeLists.txt", "conanfile.py", "packaging/msys2/PKGBUILD.in",
+                     "scripts/make_vcpkg_overlay.py", "scripts/make_msys2_recipe.py",
+                     "src/curl_engine.cpp", "tests/loopback.py", "NOTICE", "README.md"):
+            with self.subTest(path=name):
+                self.assertIn(homepage.encode(), self.files[name])
+        self.assertIn(("REPO " + repository).encode(), self.files["packaging/vcpkg/portfile.cmake.in"])
+
     def test_mismatched_tag_and_vcpkg_are_rejected(self):
         for name, data in (
             ("release.json", json.dumps({"version": "0.1.0", "tag": "v0.1", "prerelease": True}).encode()),

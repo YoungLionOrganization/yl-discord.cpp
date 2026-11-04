@@ -26,7 +26,7 @@ def main():
         raise ValueError("Expected a full Git commit")
     def committed(name):
         return subprocess.run(["git", "show", f"{commit}:{name}"], cwd=ROOT, check=True, capture_output=True).stdout
-    url = f"https://github.com/Cavanshirpro/yl-discord.cpp/archive/{commit}.tar.gz"
+    url = f"https://github.com/YoungLionOrganization/yl-discord.cpp/archive/{commit}.tar.gz"
     request = urllib.request.Request(url, headers={"User-Agent": "yl-discord.cpp-release"})
     with urllib.request.urlopen(request, timeout=120) as response:
         data = response.read()

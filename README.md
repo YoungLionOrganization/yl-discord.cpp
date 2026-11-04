@@ -1,25 +1,26 @@
 # yl-discord.cpp
 
-[![Build](https://github.com/Cavanshirpro/yl-discord.cpp/actions/workflows/ci.yml/badge.svg)](https://github.com/Cavanshirpro/yl-discord.cpp/actions/workflows/ci.yml)
-[![Packages](https://github.com/Cavanshirpro/yl-discord.cpp/actions/workflows/packages.yml/badge.svg)](https://github.com/Cavanshirpro/yl-discord.cpp/actions/workflows/packages.yml)
-[![Release](https://img.shields.io/github/v/release/Cavanshirpro/yl-discord.cpp)](https://github.com/Cavanshirpro/yl-discord.cpp/releases)
+[![Build](https://github.com/YoungLionOrganization/yl-discord.cpp/actions/workflows/ci.yml/badge.svg)](https://github.com/YoungLionOrganization/yl-discord.cpp/actions/workflows/ci.yml)
+[![Packages](https://github.com/YoungLionOrganization/yl-discord.cpp/actions/workflows/packages.yml/badge.svg)](https://github.com/YoungLionOrganization/yl-discord.cpp/actions/workflows/packages.yml)
+[![Release](https://img.shields.io/github/v/release/YoungLionOrganization/yl-discord.cpp)](https://github.com/YoungLionOrganization/yl-discord.cpp/releases)
 [![C++20](https://img.shields.io/badge/C%2B%2B-20-00599C.svg)](https://en.cppreference.com/w/cpp/20)
 [![License: LGPL v3 or later](https://img.shields.io/badge/license-LGPL--3.0--or--later-blue.svg)](LICENSE)
 
 A C++20 Discord **bot** library built around coroutines, classes and a small API.
-A personal project by [Cavanshirpro](https://github.com/Cavanshirpro), inspired by
+Maintained under [YoungLionOrganization](https://github.com/YoungLionOrganization),
+created by [Cavanshirpro](https://github.com/Cavanshirpro), inspired by
 the ease of use of [discord.py](https://github.com/Rapptz/discord.py).
 
-**v0.4.0 adds bounded multipart file uploads:** shared binary buffers, file-only
-replies and explicit attachment retention, alongside event waits, rich embeds,
-typed commands, checks, cooldowns and live REST/Gateway connections.
+**v0.4.1** updates organization integration and fixes command lookup/error context.
+The library supports shared file uploads, event waits, rich embeds, typed commands,
+checks, cooldowns and live REST/Gateway connections.
 It is an independent implementation with an experimental API, not a complete
 discord.py port. Slash commands, UI, voice, sharding and broad guild/member APIs
 are still planned.
 
-**Downloads:** [GitHub Releases](https://github.com/Cavanshirpro/yl-discord.cpp/releases)
-| [Source ZIP](https://github.com/Cavanshirpro/yl-discord.cpp/releases/download/v0.4.0/yl-discord.cpp-v0.4.0.zip)
-| [Source TAR.GZ](https://github.com/Cavanshirpro/yl-discord.cpp/releases/download/v0.4.0/yl-discord.cpp-v0.4.0.tar.gz)
+**Downloads:** [GitHub Releases](https://github.com/YoungLionOrganization/yl-discord.cpp/releases)
+| [Source ZIP](https://github.com/YoungLionOrganization/yl-discord.cpp/releases/download/v0.4.1/yl-discord.cpp-v0.4.1.zip)
+| [Source TAR.GZ](https://github.com/YoungLionOrganization/yl-discord.cpp/releases/download/v0.4.1/yl-discord.cpp-v0.4.1.tar.gz)
 | [Release notes](release.md)
 
 ## A small bot
@@ -97,7 +98,7 @@ MSYS2 **MINGW64**:
 
 ```bash
 pacman -S --needed git mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja mingw-w64-x86_64-asio mingw-w64-x86_64-curl mingw-w64-x86_64-nlohmann-json mingw-w64-x86_64-python
-git clone https://github.com/Cavanshirpro/yl-discord.cpp.git
+git clone https://github.com/YoungLionOrganization/yl-discord.cpp.git
 cd yl-discord.cpp
 cmake --preset default
 cmake --build --preset default --parallel 2

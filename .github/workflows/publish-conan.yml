@@ -9,7 +9,7 @@ on:
         description: Published GitHub release tag
         type: string
         required: true
-        default: v0.1.1
+        default: v0.4.1
       upload:
         description: Upload this library to the configured Conan remote
         type: boolean

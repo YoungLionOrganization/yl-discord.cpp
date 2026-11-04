@@ -1,8 +1,8 @@
 # Documentation
 
 Start with the [project README](../README.md) and [offline examples](../examples/README.md).
-v0.4.0 adds bounded multipart uploads and explicit attachment retention to the
-live REST/Gateway, command, event and rich-message core.
+v0.4.1 updates organization integration and command parsing on top of the live
+REST/Gateway, command, event, upload and rich-message core.
 
 | Guide | Contents |
 | --- | --- |

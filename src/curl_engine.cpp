@@ -100,7 +100,7 @@ Transfer::Transfer(asio::any_io_executor executor, const ConnectionOptions& opti
     curl_easy_setopt(easy, CURLOPT_SSL_VERIFYHOST, 2L);
     curl_easy_setopt(easy, CURLOPT_CONNECTTIMEOUT_MS, static_cast<long>(options.connect_timeout.count()));
     curl_easy_setopt(easy, CURLOPT_TIMEOUT_MS, static_cast<long>(options.request_timeout.count()));
-    curl_easy_setopt(easy, CURLOPT_USERAGENT, "DiscordBot (https://github.com/Cavanshirpro/yl-discord.cpp, " YL_DISCORD_VERSION ")");
+    curl_easy_setopt(easy, CURLOPT_USERAGENT, "DiscordBot (https://github.com/YoungLionOrganization/yl-discord.cpp, " YL_DISCORD_VERSION ")");
     curl_easy_setopt(easy, CURLOPT_WRITEFUNCTION, body_callback);
     curl_easy_setopt(easy, CURLOPT_WRITEDATA, this);
     curl_easy_setopt(easy, CURLOPT_HEADERFUNCTION, header_callback);

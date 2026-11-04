@@ -230,6 +230,35 @@ void command_error_hooks_can_await_and_fail_without_recursion() {
     CHECK(throwing.calls == 1 && throwing.take_errors().empty());
 }
 
+void lookup_precedes_argument_parsing_and_preserves_error_identity() {
+    auto transport = std::make_shared<testing::MemoryTransport>();
+    RecordingBot bot{transport};
+    std::vector<Context> calls;
+    int messages = 0;
+    bot.listen_message([&](Message) -> task<> { ++messages; co_return; });
+    bot.command("echo", [&](Context context) -> task<> {
+        calls.push_back(std::move(context)); co_return;
+    }, {.aliases = {"e"}});
+    // Unknown names never interpret their tail, including malformed quotes/escapes.
+    for (auto text : {"!missing \"unclosed", "!missing trailing\\", "!\"\" \"unclosed", "!   "})
+        bot.invoke(incoming(text));
+    CHECK(bot.errors.empty() && calls.empty() && messages == 4);
+    bot.invoke(incoming("!e \"unclosed"));
+    bot.last_error<ArgumentError>();
+    CHECK(bot.contexts.back().command_name == "echo" && bot.contexts.back().invoked_with == "e");
+    CHECK(bot.contexts.back().message.content == "!e \"unclosed");
+    bot.invoke(incoming("!echo trailing\\"));
+    bot.last_error<ArgumentError>();
+    CHECK(bot.contexts.back().command_name == "echo" && bot.contexts.back().invoked_with == "echo");
+    // Name quoting/escaping and empty argument semantics remain compatible.
+    bot.invoke(incoming("!  \"e\"   \"\" escaped\\ space 'a\\b' pre\"fix\""));
+    CHECK(calls.size() == 1 && calls.back().command_name == "echo" && calls.back().invoked_with == "e");
+    CHECK(calls.back().args == (std::vector<std::string>{"", "escaped space", "a\\b", "prefix"}));
+    bot.invoke(incoming("!\\e"));
+    CHECK(calls.size() == 2 && calls.back().args.empty());
+    CHECK(bot.errors.size() == 2 && messages == 8);
+}
+
 void help_uses_metadata_and_paginates_utf8() {
     auto transport = std::make_shared<testing::MemoryTransport>();
     RecordingBot bot{transport};
@@ -300,6 +329,7 @@ int main() {
         {"checks before cooldown", rejected_checks_do_not_consume_cooldowns},
         {"concurrent cooldown admission", concurrent_invocations_cannot_bypass_cooldowns},
         {"command error hook suspension and failure", command_error_hooks_can_await_and_fail_without_recursion},
+        {"lookup and parser error identity", lookup_precedes_argument_parsing_and_preserves_error_identity},
         {"help metadata and UTF-8 pagination", help_uses_metadata_and_paginates_utf8},
         {"Cog unload ownership", cog_unload_retains_inflight_captures}
     };

@@ -1,72 +1,128 @@
 # Roadmap
 
-Future items are plans, not release dates or current capabilities.
+Maintained in [YoungLionOrganization/yl-discord.cpp](https://github.com/YoungLionOrganization/yl-discord.cpp).
+Last reviewed: 2026-11-04. This is an ordered plan, not a release-date promise.
+Unchecked items are not available features; version targets may change after
+compatibility and implementation review.
 
-## Foundation — v0.1.0
+The goal is a coroutine-based, class-friendly C++20 library that is approachable
+for small bots and exposes clear ownership, resource limits and extension points
+for advanced applications. Correctness and measured resource use take priority
+over broad performance claims or quickly matching every discord.py feature.
 
-- [x] C++20 coroutines, timers and one event-loop thread.
-- [x] Client/Bot subclasses, async hooks and multiple listeners.
-- [x] Prefix commands, aliases, quoted arguments and Context helpers.
-- [x] Cog ownership and in-flight command removal safety.
-- [x] Raw event ingress and a replaceable message transport.
-- [x] Offline behavior tests and examples.
-- [x] CMake install/export, package recipes and publication workflows.
+## Current foundation — v0.1.0 through v0.4.0
 
-## Live messages — v0.1.1
+- [x] C++20 tasks, one event loop, Client/Bot subclasses and Cog-owned callbacks.
+- [x] Live TLS REST/Gateway, heartbeats, reconnect/resume and server-driven limits.
+- [x] Prefix commands, aliases, converters, checks, cooldowns and generated help.
+- [x] Message operations, reactions, embeds and explicit mention policy.
+- [x] Buffered multipart uploads and explicit attachment retention.
+- [x] Removable listeners and predicate waits with deadlines/cancellation.
+- [x] Offline transports, network fixtures and static/shared package consumers.
+- [x] Automated version tag, tested packages and published GitHub Releases.
+- [x] Optional offline performance harness with raw samples and limitations.
 
-- [x] Nonblocking TLS HTTP and WebSocket transports.
-- [x] Bot-token authentication without credentials in logs.
-- [x] Gateway discovery, API v10, Hello, Identify and Ready.
-- [x] Heartbeat jitter, ACK tracking and immediate heartbeat responses.
-- [x] Sequence/session persistence, reconnect/resume and close-code policy.
-- [x] JSON conversion for supported User/Message/Ready models.
-- [x] MESSAGE_CREATE → Bot → awaitable reply → REST send.
-- [x] Server-driven bucket/global limits and 429 waiting.
-- [x] Request/handshake deadlines, bounded retries and network shutdown.
-- [x] Local HTTP/WebSocket integration fixtures.
-- [ ] Owner-initiated authenticated Discord smoke test.
+Slash commands, UI, voice, broad guild state and sharding are not implemented.
+Authenticated Discord smoke testing is owner-initiated; automated tests use
+synthetic credentials and local fixtures.
 
-Fixtures cover REST waiting without blocking heartbeats, reconnect on missing
-ACK, Resume, 429 waiting, fatal authentication close and network cancellation.
-Guild prefix commands require message content intent in code and in the Developer
-Portal. Compression and generic task-group cancellation remain future work.
+## First priority — maintenance and performance (v0.4.x)
 
-## Everyday bot features
+- [x] Update repository URLs, package sources, badges and HTTP identification for
+  YoungLionOrganization; retain original copyright attribution.
+- [ ] Verify generated package downloads, transferred-repository Actions and
+  release publication under the organization.
+- [x] Preserve canonical command/alias identity on argument syntax errors.
+- [x] Resolve command names before parsing unknown-command arguments; avoid
+  allocating and shifting a combined command/argument vector.
+- [x] Add regression coverage and run all local native/network suites.
+- [ ] Verify package consumers and the cross-platform release CI matrix.
+- [ ] Record before/after measurements with the same compiler, configuration and
+  workload; retain raw data without generalizing synthetic results to live bots.
 
-- [ ] Slash commands, sync, interaction response/defer/followup.
-- [ ] Buttons, selects, modals and Views.
-- [ ] Guild, channel, member, role and permission APIs.
-- [x] Message fetch/edit/delete and own-reaction helpers.
-- [x] Typed rich embeds, structured edits and explicit allowed-mention policies.
-- [x] Buffered multipart file uploads, response metadata and explicit attachment retention.
-- [ ] Filesystem/stream sources and upload progress hooks.
-- [x] Typed parameters, converters, checks, cooldowns and generated help.
-- [x] Cog-wide command removal with in-flight ownership.
-- [ ] Cog lifecycle hooks and managed background tasks.
+Exit criteria: regression coverage and native/package CI pass; source archives
+contain the intended files; an immutable patch release publishes with valid
+checksums. Public layout/interface changes require a minor version.
 
-## Advanced control
+## Runtime reliability and resource controls (proposed v0.5)
 
-- [ ] Cache budgets, opt-out, TTL and eviction policy.
-- [x] Predicate-based `wait_for<Event>()` with cancellation/deadlines.
-- [x] Removable Message/Ready/RawEvent subscriptions with in-flight ownership.
-- [ ] Event/command hooks and optional middleware.
-- [ ] REST latency, heartbeat and rate-limit queue metrics.
-- [ ] Low-level REST/Gateway access using the same safeguards.
-- [ ] Sharding, identify coordination, queue bounds and backpressure.
+- [ ] Bound REST, dispatch and upload admission, with explicit rejection and
+  cancellation behavior rather than silent dropping.
+- [ ] Add opt-in REST latency, rate-limit waiting, heartbeat health and queue-depth
+  diagnostics with credential-safe defaults.
+- [ ] Define Cog lifecycle hooks and managed background-task shutdown.
+- [ ] Add sustained-load fixtures covering full queues, cancellation and memory.
+- [ ] Profile JSON/model copies, scheduling and cooldown cleanup before optimizing.
 
-Offline testing and typed command signatures already have a working foundation.
-Event recording/replay, explicit cache budgets and opt-in diagnostics are
-candidates for improving debugging and large-bot operation. Recording needs
-a deliberate policy for credentials, message content and retention.
+Exit criteria: documented bounds hold under load, cancellation releases pending
+work and failures reach error hooks without exposing credentials.
 
-## Performance evidence
+## Application commands and interactions (proposed v0.6)
 
-An optional [offline dispatch/reply benchmark](BENCHMARKS.md) now provides a
-repeatable synthetic baseline with raw samples, configuration and limitations.
-It does not establish full-feature or live-network superiority.
+- [ ] Typed interaction models and raw ingress independent of a full guild cache.
+- [ ] Slash-command registration/sync with explicit scope and deletion policy.
+- [ ] Initial response, defer, edit and followup helpers with clear state errors.
+- [ ] Reuse converters, checks and command errors where semantics match.
+- [ ] Fixture tests for acknowledgement state, duplicate responses, expiration,
+  reconnect and HTTP failures; a minimal slash-command example.
 
-Extend measurements to equivalent live workloads, intents and caches
-against discord.py on the same machine. Measure parse/dispatch throughput,
-command latency p50/p95/p99, CPU, RSS, build time and distribution size. Separate
-network latency and Discord limits from CPU benchmarks. No general advantage is
-claimed from the initial offline measurements.
+Exit criteria: small slash bots use owning Context-like values and coroutine
+callbacks; invalid response sequences fail predictably.
+
+## Interactive UI (proposed v0.7)
+
+- [ ] Buttons, selects, modals and response helpers.
+- [ ] Class-based Views with explicit ownership, timeout and cancellation.
+- [ ] Routing, authorization and opt-in persistent component handling.
+- [ ] Stale/concurrent interaction and callback-removal fixtures plus examples.
+
+Exit criteria: Views have bounded lifetime and cleanup; supported controls do not
+require ordinary users to construct raw JSON.
+
+## Guild APIs and optional state (proposed v0.8)
+
+- [ ] Guild, channel, member, role and permission REST models/helpers.
+- [ ] Explicit partial-model and fetch semantics.
+- [ ] Opt-in caches with entry/byte budgets, TTL, eviction and cache-free use.
+- [ ] Permission and partial/unavailable-object fixtures.
+- [ ] Filesystem/stream upload sources and progress with bounded memory.
+
+Exit criteria: applications choose state/memory policy; cached objects do not
+silently imply complete or current guild state.
+
+## Larger deployments (proposed v0.9)
+
+- [ ] Shard lifecycle and identify coordination with explicit restart policy.
+- [ ] Backpressure across shard/event boundaries and predictable shutdown.
+- [ ] Document executor integration and thread-safe operation boundaries.
+- [ ] Controlled sustained-load/recovery measurements; optional replay fixtures
+  with explicit message-content and credential retention policy.
+
+Exit criteria: shard recovery respects resource/identify limits without unbounded
+queues, leaked tasks or duplicate ownership.
+
+## Stable API (v1.0 readiness)
+
+- [ ] Review naming, ownership, cancellation and errors across APIs.
+- [ ] Publish compatibility/ABI policy and migration guidance; verify supported
+  compiler/dependency combinations.
+- [ ] Complete installation, cookbook, class-based examples and extension docs.
+- [ ] Measure equivalent live workloads on controlled hardware, separating network
+  limits from framework CPU costs.
+- [ ] Complete an owner-run authenticated smoke test before claiming live-platform
+  validation; keep real credentials out of PR workflows.
+
+Voice/audio needs a separate design and dependency review; it is outside these
+milestones rather than an implied v1.0 commitment.
+
+## Selecting and verifying work
+
+1. Reproduce a bug or identify a measured bottleneck before changing behavior.
+2. Add targeted regression coverage while preserving ownership/cancellation,
+   custom transport and class callback semantics.
+3. Run the relevant suites and [CI matrix](TESTING.md). Retain the
+   [configuration and raw samples](BENCHMARKS.md) for performance changes.
+4. Update documentation/changelog and follow the [release process](RELEASING.md).
+
+The transfer does not change LGPL-3.0-or-later licensing. Existing tags/assets
+remain immutable; new package recipes use the organization URL.

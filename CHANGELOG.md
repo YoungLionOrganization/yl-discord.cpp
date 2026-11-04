@@ -2,6 +2,20 @@
 
 Versions follow [MAJOR.MINOR.PATCH](docs/VERSIONING.md).
 
+## [0.4.1] - 2026-11-04
+
+- Move canonical repository/package/runtime links to YoungLionOrganization.
+- Preserve original attribution and immutable release history after the transfer.
+- Resolve command names before parsing unknown argument tails.
+- Preserve command/alias identity when argument syntax fails.
+- Remove combined-token vector allocation and first-element shifting from dispatch.
+- Regression coverage for lookup, quoting/escaping, empty arguments and repository identity.
+- Prioritized roadmap with proposed milestones and completion criteria.
+- Include offline benchmark tooling, raw reports and reproduction guidance in source packages.
+
+No public API/layout changes. Local validation covers six CTest suites and 12
+release-tool tests; authenticated Discord smoke testing remains owner-initiated.
+
 ## [0.4.0] - 2026-10-29
 
 - Immutable shared FileUpload buffers, preserving binary and NUL bytes.

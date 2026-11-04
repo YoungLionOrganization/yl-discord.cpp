@@ -3,7 +3,7 @@
 # Licensed under LGPL-3.0-or-later; see NOTICE, LICENSE and COPYING.
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
-    REPO Cavanshirpro/yl-discord.cpp
+    REPO YoungLionOrganization/yl-discord.cpp
     REF @SOURCE_COMMIT@
     SHA512 @SOURCE_SHA512@
     HEAD_REF main
