@@ -5,6 +5,28 @@ The optional benchmark measures prebuilt incoming Message dispatch, a prefix
 batch-sensitive p50/p95/p99 completion latency and peak resident process memory.
 It measures a synthetic framework path, not live Discord performance.
 
+## Maintenance comparison — 2026-11-04
+
+Five fresh-process samples per revision alternated before/after order on the same
+Windows AMD64 development desktop, with GCC 16.2.0, shared Release `-O3 -DNDEBUG`,
+10,000 events and batch size 128. The baseline executable/library were retained
+from clean commit `94eb72999dfc37ca922d12a62e5e34c85c7fb76a` (0.4.0); the new build
+used clean commit `90b4cb5ab34ddfb6d456e8cf615f98a308eb5ddc` (0.4.1).
+
+| Native C++ revision | Commands/s | p50 (µs) | p95 (µs) | p99 (µs) | Peak resident (MiB) |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Before | 214,075 | 235.2 | 478.8 | 882.7 | 13.13 |
+| After | 225,233 | 223.5 | 458.3 | 698.0 | 13.16 |
+
+These are process medians; [all ten samples and metadata](benchmarks/2026-11-04-command-parser.json)
+are retained. The parser avoids a combined command/argument vector and its
+first-element erase, and unknown command tails are no longer parsed. This `ping`
+fixture measures the known-command path only. Both versions use the same native
+fixture, not a Python comparator. The revisions also differ in repository/version
+metadata. Other applications were running; these small, overlapping desktop
+samples do not isolate causation or establish a general speed/memory improvement.
+In particular, there is no measured reduction in process peak memory here.
+
 ## Recorded sample — 2026-10-29
 
 One Windows 11 AMD64 development desktop run used 10,000 events per process,

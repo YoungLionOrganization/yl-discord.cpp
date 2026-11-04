@@ -1,0 +1,210 @@
+{
+  "schema": 1,
+  "workload": "offline prebuilt-message dispatch -> prefix ping -> in-memory reply",
+  "measured_at_utc": "2026-11-04T18:21:41.404581+00:00",
+  "platform": "Windows-11-10.0.22631-SP0",
+  "architecture": "AMD64",
+  "configuration": "MinGW shared Release -O3 -DNDEBUG",
+  "source_commits": {
+    "before": "94eb72999dfc37ca922d12a62e5e34c85c7fb76a",
+    "after": "90b4cb5ab34ddfb6d456e8cf615f98a308eb5ddc"
+  },
+  "source_tree_dirty": false,
+  "iterations": 10000,
+  "batch_size": 128,
+  "repeats": 5,
+  "process_order": "alternating before/after each repeat",
+  "summary": {
+    "before": {
+      "commands_per_second": 214075.0033,
+      "peak_resident_bytes": 13762560,
+      "latency_us": {
+        "p50": 235.2,
+        "p95": 478.8,
+        "p99": 882.7
+      }
+    },
+    "after": {
+      "commands_per_second": 225233.3417,
+      "peak_resident_bytes": 13803520,
+      "latency_us": {
+        "p50": 223.5,
+        "p95": 458.3,
+        "p99": 698
+      }
+    }
+  },
+  "samples": {
+    "before": [
+      {
+        "implementation": "yl-discord.cpp",
+        "version": "0.4.0",
+        "compiler": "GCC 16.2.0",
+        "configuration": "Release",
+        "iterations": 10000,
+        "batch_size": 128,
+        "dispatch_seconds": 0.0467126,
+        "commands_per_second": 214075.0033,
+        "latency_us": {
+          "p50": 235.2,
+          "p95": 478.8,
+          "p99": 638.1
+        },
+        "peak_resident_bytes": 13766656
+      },
+      {
+        "implementation": "yl-discord.cpp",
+        "version": "0.4.0",
+        "compiler": "GCC 16.2.0",
+        "configuration": "Release",
+        "iterations": 10000,
+        "batch_size": 128,
+        "dispatch_seconds": 0.0462861,
+        "commands_per_second": 216047.5823,
+        "latency_us": {
+          "p50": 230.1,
+          "p95": 451,
+          "p99": 1354.5
+        },
+        "peak_resident_bytes": 13758464
+      },
+      {
+        "implementation": "yl-discord.cpp",
+        "version": "0.4.0",
+        "compiler": "GCC 16.2.0",
+        "configuration": "Release",
+        "iterations": 10000,
+        "batch_size": 128,
+        "dispatch_seconds": 0.0556227,
+        "commands_per_second": 179782.7146,
+        "latency_us": {
+          "p50": 268.3,
+          "p95": 588.3,
+          "p99": 882.7
+        },
+        "peak_resident_bytes": 13774848
+      },
+      {
+        "implementation": "yl-discord.cpp",
+        "version": "0.4.0",
+        "compiler": "GCC 16.2.0",
+        "configuration": "Release",
+        "iterations": 10000,
+        "batch_size": 128,
+        "dispatch_seconds": 0.0406003,
+        "commands_per_second": 246303.5987,
+        "latency_us": {
+          "p50": 209.6,
+          "p95": 387.8,
+          "p99": 535.5
+        },
+        "peak_resident_bytes": 13762560
+      },
+      {
+        "implementation": "yl-discord.cpp",
+        "version": "0.4.0",
+        "compiler": "GCC 16.2.0",
+        "configuration": "Release",
+        "iterations": 10000,
+        "batch_size": 128,
+        "dispatch_seconds": 0.0643801,
+        "commands_per_second": 155327.5003,
+        "latency_us": {
+          "p50": 287.3,
+          "p95": 885.2,
+          "p99": 1732.5
+        },
+        "peak_resident_bytes": 13750272
+      }
+    ],
+    "after": [
+      {
+        "implementation": "yl-discord.cpp",
+        "version": "0.4.1",
+        "compiler": "GCC 16.2.0",
+        "configuration": "Release",
+        "iterations": 10000,
+        "batch_size": 128,
+        "dispatch_seconds": 0.0546906,
+        "commands_per_second": 182846.7781,
+        "latency_us": {
+          "p50": 267.8,
+          "p95": 565.4,
+          "p99": 724.5
+        },
+        "peak_resident_bytes": 13803520
+      },
+      {
+        "implementation": "yl-discord.cpp",
+        "version": "0.4.1",
+        "compiler": "GCC 16.2.0",
+        "configuration": "Release",
+        "iterations": 10000,
+        "batch_size": 128,
+        "dispatch_seconds": 0.0507611,
+        "commands_per_second": 197001.247,
+        "latency_us": {
+          "p50": 247.4,
+          "p95": 576.5,
+          "p99": 728.7
+        },
+        "peak_resident_bytes": 13803520
+      },
+      {
+        "implementation": "yl-discord.cpp",
+        "version": "0.4.1",
+        "compiler": "GCC 16.2.0",
+        "configuration": "Release",
+        "iterations": 10000,
+        "batch_size": 128,
+        "dispatch_seconds": 0.0443984,
+        "commands_per_second": 225233.3417,
+        "latency_us": {
+          "p50": 223.5,
+          "p95": 458.3,
+          "p99": 688.8
+        },
+        "peak_resident_bytes": 13791232
+      },
+      {
+        "implementation": "yl-discord.cpp",
+        "version": "0.4.1",
+        "compiler": "GCC 16.2.0",
+        "configuration": "Release",
+        "iterations": 10000,
+        "batch_size": 128,
+        "dispatch_seconds": 0.0434739,
+        "commands_per_second": 230023.0713,
+        "latency_us": {
+          "p50": 220.1,
+          "p95": 419.1,
+          "p99": 698
+        },
+        "peak_resident_bytes": 13803520
+      },
+      {
+        "implementation": "yl-discord.cpp",
+        "version": "0.4.1",
+        "compiler": "GCC 16.2.0",
+        "configuration": "Release",
+        "iterations": 10000,
+        "batch_size": 128,
+        "dispatch_seconds": 0.0410197,
+        "commands_per_second": 243785.3032,
+        "latency_us": {
+          "p50": 207,
+          "p95": 410,
+          "p99": 674.6
+        },
+        "peak_resident_bytes": 13791232
+      }
+    ]
+  },
+  "limitations": [
+    "Uncontrolled Windows development desktop with other applications running.",
+    "Both are the native C++ fixture; no discord.py comparator or live network.",
+    "Input construction/startup excluded from dispatch timing; process peak memory includes startup.",
+    "The compared revisions also differ in repository identification and version metadata.",
+    "Small synthetic samples do not establish general or live-bot performance gains."
+  ]
+}

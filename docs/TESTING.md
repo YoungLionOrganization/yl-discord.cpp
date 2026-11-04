@@ -24,6 +24,8 @@ The command suite covers strict numeric/ID conversion, custom converters, option
 parameters, arity errors, preserved invocation Context, asynchronous check ownership,
 cooldown alias sharing/scopes/reset/expiry/capacity, failed-check admission,
 UTF-8 help pagination and Cog-wide removal during a suspended callback.
+It also checks that unknown command tails are ignored, syntax errors preserve
+canonical/alias identity, and quoted/escaped names and empty arguments still work.
 Core tests also verify lazy message operations, snapshot binding and send-only
 custom transport compatibility. The message network scenario checks fetch/edit/
 delete, mention suppression on edits, encoded Unicode/custom reactions, 204 empty
@@ -60,6 +62,8 @@ CI also relocates CMake installation prefixes and tests shared/static builds.
 
 Release-tool tests reject version mismatch, broken links, credential paths,
 unsafe archive entries and unfinished release notes. Publisher tests verify create/upload/final publication and idempotent retry.
+Repository identity checks keep package sources, runtime identification and
+organization metadata consistent.
 Source ZIP/TAR archives are validated after creation. `check_release.py` scans only tracked/unignored
 project files; it does not read ignored local credential files. Never force-add
 such files. The scanner is a release check, not a guarantee of secret detection.

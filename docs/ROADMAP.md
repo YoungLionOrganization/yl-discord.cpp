@@ -39,7 +39,7 @@ synthetic credentials and local fixtures.
   and shared-library names cannot remain stale.
 - [x] Add regression coverage and run all local native/network suites.
 - [ ] Verify package consumers and the cross-platform release CI matrix.
-- [ ] Record before/after measurements with the same compiler, configuration and
+- [x] Record before/after measurements with the same compiler, configuration and
   workload; retain raw data without generalizing synthetic results to live bots.
 
 Exit criteria: regression coverage and native/package CI pass; source archives
