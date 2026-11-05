@@ -1,9 +1,14 @@
 # Roadmap
 
 Maintained in [YoungLionOrganization/yl-discord.cpp](https://github.com/YoungLionOrganization/yl-discord.cpp).
-Last reviewed: 2026-11-04. This is an ordered plan, not a release-date promise.
+Last reviewed: 2026-11-06. This is an ordered plan, not a release-date promise.
 Unchecked items are not available features; version targets may change after
 compatibility and implementation review.
+
+There is no major-release milestone in this plan. The 0.x series can continue
+through `0.10.x`, `0.11.x` and later minor versions; reaching `0.9.x` does not force
+a major bump. Minor numbers are integers, not decimal fractions. See the
+[versioning policy](VERSIONING.md) and [current feature coverage](COMPARISON.md).
 
 The goal is a coroutine-based, class-friendly C++20 library that is approachable
 for small bots and exposes clear ownership, resource limits and extension points
@@ -62,6 +67,9 @@ resolved by rerunning the failed job; the release checks were retained.
 - [ ] Define Cog lifecycle hooks and managed background-task shutdown.
 - [ ] Add sustained-load fixtures covering full queues, cancellation and memory.
 - [ ] Profile JSON/model copies, scheduling and cooldown cleanup before optimizing.
+- [ ] Add a replaceable help provider/formatter with documented enable/disable,
+  localization and Cog grouping. Preserve current opt-in help compatibility;
+  automatic startup registration must be an explicit API policy decision.
 
 Exit criteria: documented bounds hold under load, cancellation releases pending
 work and failures reach error hooks without exposing credentials.
@@ -70,7 +78,13 @@ work and failures reach error hooks without exposing credentials.
 
 - [ ] Typed interaction models and raw ingress independent of a full guild cache.
 - [ ] Slash-command registration/sync with explicit scope and deletion policy.
+- [ ] A CommandTree abstraction integrated with Bot, including groups/subcommands,
+  choices, autocomplete, permissions, install contexts and localization.
+- [ ] User and message context-menu commands with typed targets and error hooks.
+- [ ] Shared prefix/slash command definitions where compatible, with explicit
+  differences in invocation and argument conversion.
 - [ ] Initial response, defer, edit and followup helpers with clear state errors.
+- [ ] Ephemeral responses and modal opening/submission through typed interaction APIs.
 - [ ] Reuse converters, checks and command errors where semantics match.
 - [ ] Fixture tests for acknowledgement state, duplicate responses, expiration,
   reconnect and HTTP failures; a minimal slash-command example.
@@ -78,15 +92,31 @@ work and failures reach error hooks without exposing credentials.
 Exit criteria: small slash bots use owning Context-like values and coroutine
 callbacks; invalid response sequences fail predictably.
 
-## Interactive UI (proposed v0.7)
+## Interactive UI, Components V2 and current modals (proposed v0.7)
 
-- [ ] Buttons, selects, modals and response helpers.
-- [ ] Class-based Views with explicit ownership, timeout and cancellation.
+- [ ] Legacy ActionRow/Button models, supported button styles and String/User/Role/
+  Mentionable/Channel Select menus with typed selection results.
+- [ ] Class-based View and LayoutView-style APIs with ownership, timeout,
+  cancellation, callback errors and permission checks.
+- [ ] Components V2: Container, Section, TextDisplay, Thumbnail, MediaGallery,
+  File, Separator and compatible interactive children; message-flag and nesting
+  validation, send/edit support and explicit content/embed compatibility rules.
+- [ ] Modern Modal models with Label/TextDisplay layout and supported child
+  controls: TextInput, select menus, modal FileUpload, RadioGroup, CheckboxGroup
+  and Checkbox, following the current platform's allowed placement rules.
+- [ ] Modal submit parsing, resolved selections/uploads, validation errors,
+  deadlines and safe cleanup of callbacks already in progress.
 - [ ] Routing, authorization and opt-in persistent component handling.
 - [ ] Stale/concurrent interaction and callback-removal fixtures plus examples.
 
 Exit criteria: Views have bounded lifetime and cleanup; supported controls do not
 require ordinary users to construct raw JSON.
+
+This is planned coverage, not shipped UI support. The existing `FileUpload` value
+uploads outgoing message bytes; it is not a modal file-picker component. Recheck
+the [Discord component reference](https://docs.discord.com/developers/components/reference)
+and [discord.py UI reference](https://discordpy.readthedocs.io/en/stable/interactions/api.html#discord.ui.LayoutView)
+when implementing these items; this inventory was reviewed on 2026-11-06.
 
 ## Guild APIs and optional state (proposed v0.8)
 
@@ -110,7 +140,7 @@ silently imply complete or current guild state.
 Exit criteria: shard recovery respects resource/identify limits without unbounded
 queues, leaked tasks or duplicate ownership.
 
-## Stable API (v1.0 readiness)
+## API quality and continued coverage (proposed v0.10.x and beyond)
 
 - [ ] Review naming, ownership, cancellation and errors across APIs.
 - [ ] Publish compatibility/ABI policy and migration guidance; verify supported
@@ -121,8 +151,11 @@ queues, leaked tasks or duplicate ownership.
 - [ ] Complete an owner-run authenticated smoke test before claiming live-platform
   validation; keep real credentials out of PR workflows.
 
-Voice/audio needs a separate design and dependency review; it is outside these
-milestones rather than an implied v1.0 commitment.
+Voice/audio needs a separate design and dependency review. Maintain an explicit
+inventory for remaining discord.py capabilities, including webhooks, threads,
+polls, moderation, scheduled events, presence, extensions and background tasks.
+These are future coverage areas, not implemented features or a promise that one
+minor release will provide complete parity.
 
 ## Selecting and verifying work
 

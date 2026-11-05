@@ -134,6 +134,34 @@ preserving UTF-8 boundaries for valid text. It uses the same transport, mention
 defaults and rate-limit queue as other sends. A custom transport must enforce
 its own mention policy if needed.
 
+### Customize help
+
+`add_help_command("guide")` changes the command name, and descriptions/usages/
+aliases come from each command's registration metadata. It still uses the built-in
+text formatter; `help_text()` is not a virtual formatting hook and there is no
+HelpCommand/provider class yet. Help is not registered automatically by Bot's
+constructor.
+
+For fully custom text or embeds, register your own command. Remove the built-in
+one first if it was already enabled:
+
+```cpp
+(void)bot.remove_command("help");
+bot.command("help", [](Context ctx) -> task<> {
+    Embed embed;
+    embed.title = "Bot help";
+    embed.description = "Use !ping to check the bot.";
+    MessageOptions response;
+    response.embeds.push_back(std::move(embed));
+    co_await ctx.reply(std::move(response));
+}, {.description = "Show custom help"});
+```
+
+Use `command_names()`, `get_command()` or `help_text()` for generated metadata in
+your own renderer. A custom renderer must handle its own pagination/limits and
+visibility policy. A button/select-based help UI needs the planned component
+layer; it is not available merely by replacing the prefix help callback.
+
 ## Cog removal
 
 `remove_cog(shared_ptr<Cog>)` removes that instance's currently registered commands

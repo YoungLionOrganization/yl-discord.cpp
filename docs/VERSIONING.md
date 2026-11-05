@@ -6,7 +6,12 @@ in discussion, not a release tag accepted by the tooling.
 
 - **PATCH:** backward-compatible fixes, documentation and packaging corrections.
 - **MINOR:** new functionality; before 1.0 this may also include documented API breaks.
-- **MAJOR:** incompatible public API changes after 1.0, or the declared 1.0 milestone.
+- **MAJOR:** reserved for a separately decided major-version policy change; there
+  is no scheduled major-version milestone in the current roadmap.
+
+Development continues in the 0.x series for as many minor releases as needed:
+`0.9.x` -> `0.10.x` -> `0.11.x` is valid. Version components are compared as
+integers; `0.10.0` is newer than `0.9.99` and is not another spelling of `0.1.0`.
 
 Before 1.0 there is no cross-minor API/ABI compatibility promise. The installed
 CMake package uses SameMinorVersion compatibility; patch updates within a minor
