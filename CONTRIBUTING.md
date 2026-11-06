@@ -1,7 +1,9 @@
 # Contributing
 
-Check the [current scope](docs/ROADMAP.md) before adding features. v0.4.0 includes a
-live message transport; small, tested changes to async behavior and API clarity are useful.
+Check the [current feature status](docs/COMPARISON.md) and
+[workstream roadmap](docs/ROADMAP.md) before adding features. Name the relevant
+workstream/task in the change and update its scope, acceptance criteria and evidence
+when behavior changes. A generic REST method does not establish typed feature parity.
 
 Use C++20 and the existing namespace/style. Keep simple bot code concise while
 documenting ownership and advanced access. Take owned event/Context values in
@@ -13,13 +15,21 @@ Build/test with the [build guide](docs/BUILDING.md), then run:
 
 ```sh
 python scripts/check_release.py
-python -m unittest discover -s tests -p test_release.py -v
+python scripts/audit_roadmap.py
+python -m unittest discover -s tests -p 'test_*.py' -v
 ```
 
 For package-facing changes also install and run `tests/consumer`, and use
 `conan create` where appropriate. Change docs/examples with API changes. Tests
 should cover behavior or meaningful failure cases rather than duplicate code.
 Do not add token-dependent CI tests, generated build files or credentials.
+
+Before implementing a new API family or preparing a release, run the explicit
+official-source [drift review](docs/roadmap/RESEARCH.md#refresh-procedure).
+Normal source CI uses the committed snapshot offline. Review new fields, methods,
+access restrictions and deprecations before updating its digest/mappings; never
+delete unmapped items just to make the audit pass. Update the reviewed baseline
+when VERSION changes. Completed task checkboxes need implementation/test evidence.
 
 Use the issue/PR templates to describe the concrete problem, final behavior and
 validation. Keep release versions unchanged in ordinary feature PRs; the

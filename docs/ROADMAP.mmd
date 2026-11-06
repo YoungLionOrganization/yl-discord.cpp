@@ -1,0 +1,20 @@
+flowchart TD
+    B["Shipped baseline: 0.4.1"] --> F["0.5.x: runtime, models, prefix, help, Cogs, loops"]
+    F --> I["0.6.x: interactions, CommandTree, slash, context menus, hybrid"]
+    I --> U["0.7.x: View, Components V2, LayoutView, modern modals"]
+    F --> S["0.8.x: permissions, members, guilds, channels, cache"]
+    S --> M["0.9.x: messages, search, pins, polls, webhooks"]
+    U --> M
+    S --> C["0.10.x: audit, AutoMod, schedules, stages, soundboard"]
+    I --> A["0.11.x: applications, OAuth2, linked roles, commerce"]
+    S --> V["0.12.x: voice, DAVE, audio sources"]
+    V --> E["0.13.x: sharding and deployment scale"]
+    S --> E
+    E --> N["0.14.x and onward: remaining audited coverage"]
+    A --> N
+    C --> N
+    M --> N
+    Q["Every milestone: limits, tests, security, packages, usability, upstream audit"] -.-> F
+    Q -.-> I
+    Q -.-> U
+    Q -.-> N

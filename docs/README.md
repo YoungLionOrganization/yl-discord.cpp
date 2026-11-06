@@ -24,7 +24,9 @@ REST/Gateway, command, event, upload and rich-message core.
 | [Versioning](VERSIONING.md) | MAJOR.MINOR.PATCH and compatibility policy |
 | [Releasing](RELEASING.md) | Metadata, tags, checks and release assets |
 | [Publishing](PUBLISHING.md) | GitHub permissions and optional Conan credentials |
-| [Roadmap](ROADMAP.md) | Completed milestones and planned features |
+| [Roadmap](ROADMAP.md) | 35 workstreams, delivery slices, dependencies and acceptance criteria |
+| [Roadmap diagram](ROADMAP.mmd) | Mermaid view of the open-ended 0.x delivery plan |
+| [Roadmap research](roadmap/RESEARCH.md) | Official source inventory, scope decisions and drift-audit procedure |
 
 [Changelog](../CHANGELOG.md) · [Contributing](../CONTRIBUTING.md) ·
 [Security](../SECURITY.md) · [License notices](../NOTICE)

@@ -10,8 +10,16 @@ cmake --preset default
 cmake --build --preset default
 ctest --preset default
 python scripts/check_release.py
-python -m unittest discover -s tests -p test_release.py -v
+python scripts/audit_roadmap.py
+python -m unittest discover -s tests -p 'test_*.py' -v
 ```
+
+The roadmap audit is offline by default. Its focused tests reject missing API/page/
+component mappings, dependency cycles, missing acceptance/task text, unsupported
+completion claims, stale VERSION baselines and diverging Mermaid diagrams. Parser
+fixtures distinguish component types from unrelated opcode tables. Explicit online
+source comparison is a separate read-only maintainer check; see the
+[research procedure](roadmap/RESEARCH.md#refresh-procedure).
 
 The core executable covers Snowflake bounds, intents, quoted argument parsing,
 concurrent commands, reply references, independent hooks/listeners, error

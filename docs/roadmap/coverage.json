@@ -1,0 +1,3477 @@
+{
+  "schema": 1,
+  "reviewed_on": "2026-11-06",
+  "cpp_api_review_commit": "f224337e01bb201718aa72d15576e7de44253f0d",
+  "workstreams": [
+    {
+      "id": "W01",
+      "title": "Coroutine runtime, lifecycle and errors",
+      "milestone": "0.5.x / continuous",
+      "status": "partial",
+      "depends_on": [],
+      "evidence": [
+        "include/yl/discord/async.hpp",
+        "include/yl/discord/client.hpp",
+        "src/client.cpp",
+        "tests/core.cpp"
+      ],
+      "scope": [
+        "Define owned/borrowed lifetimes, coroutine-lambda capture safety, task destruction, executor affinity and reentrancy rules; examples must not require C++ coroutine internals for ordinary bots.",
+        "Provide structured task groups, cancellation propagation, bounded shutdown and a clear distinction between close, pause, reconnect and reusable-client reset.",
+        "Add setup/login/start/connect/ready/close lifecycle contracts and ready barriers, without blocking constructors or invoking the event loop in destructors.",
+        "Define exception hierarchy and context for transport, HTTP, permissions, parsing, conversion, callback and cancellation failures; preserve causes without leaking credentials.",
+        "Keep async-native execution; offload explicit blocking/CPU tasks to bounded executors and document external Asio integration and cross-thread ingress.",
+        "Define monotonic deadlines, wall-clock/calendar utilities and injected clocks for deterministic timing; prevent hidden permanent polling or one-thread-per-request designs.",
+        "Expose replaceable executors/runtime seams without forcing beginners to configure them; document ownership when users supply their own context."
+      ],
+      "acceptance": [
+        "Cancellation/destruction/stop-resume races and suspended callbacks pass ASan/UBSan fixtures with no dangling captures or leaked work.",
+        "Shutdown completes within a configured bound even during a stalled network request, timer, task group or full queue.",
+        "Small subclass and function-based bots compile with documented APIs and receive actionable error contexts."
+      ]
+    },
+    {
+      "id": "W02",
+      "title": "HTTP engine, authentication and rate limits",
+      "milestone": "0.5.x / continuous",
+      "status": "partial",
+      "depends_on": [
+        "W01",
+        "W04"
+      ],
+      "evidence": [
+        "include/yl/discord/network.hpp",
+        "src/rest.cpp",
+        "src/curl_engine.cpp",
+        "tests/network.cpp",
+        "tests/loopback.py"
+      ],
+      "scope": [
+        "Separate bot authentication, OAuth2 bearer credentials, client credentials, webhook tokens, interaction tokens and unauthenticated CDN requests; do not attach bot tokens to arbitrary URLs.",
+        "Audit route normalization, major-parameter scopes, bucket discovery/merging, shared/global limits, invalid-request controls and dynamic server retry headers without hardcoded account-wide quotas.",
+        "Specify retry admission by method/idempotency and response certainty; preserve the existing refusal to blindly retry an uncertain message POST.",
+        "Bound queues, in-flight transfers, response/decompression bytes, connection pools and retained bucket state; expose admission errors and cancellation rather than unbounded growth.",
+        "Cover async DNS, TLS trust stores, proxies, IPv4/IPv6, request/connect deadlines, connection reuse, redirects and credential-safe target validation.",
+        "Add cursor/page iteration infrastructure with early cancellation, backpressure, before/after bounds and endpoint-specific semantics; retain raw HTTP response/status access.",
+        "Support per-endpoint permission/auth requirements, audit-log reasons, structured Discord error details and safe nested field-error reporting.",
+        "Keep custom transports/adapters usable; expose middleware/diagnostic hooks that cannot silently disable core authentication or rate-limit safeguards."
+      ],
+      "acceptance": [
+        "Concurrent learned-bucket remapping, global/shared 429s, malformed delays, auth failures and cancellation are checked with deterministic local servers.",
+        "No request leaks credentials to a redirected/untrusted destination; request/response and queue budgets hold under sustained load.",
+        "Pagination can stop early without downloading all pages or retaining all objects; uncertain writes are never duplicated automatically."
+      ]
+    },
+    {
+      "id": "W03",
+      "title": "Gateway, intents, presence and protocol control",
+      "milestone": "0.5.x-0.6.x / continuous",
+      "status": "partial",
+      "depends_on": [
+        "W01",
+        "W02",
+        "W04"
+      ],
+      "evidence": [
+        "src/gateway.cpp",
+        "src/protocol.cpp",
+        "include/yl/discord/models.hpp",
+        "tests/loopback.py"
+      ],
+      "scope": [
+        "Audit every documented send/receive opcode and close code, including heartbeat/resume sequencing, invalid sessions, reconnect budgets and unknown-opcode handling.",
+        "Expose presence/activity/status updates, member requests/chunks, voice-state updates, soundboard requests and channel-info requests where authorized by the current Gateway protocol.",
+        "Support current intent flags and privileged-intent limitations; preserve missing data caused by intents instead of inventing empty complete objects.",
+        "Add negotiated transport compression, bounded inflate state, fragmentation and decompression-bomb handling; treat unsupported encodings explicitly.",
+        "Separate session-ready, guild availability/chunking completion and application-ready semantics; document repeated READY/resume behavior.",
+        "Preserve raw payload access and protocol metadata while redacting secrets; allow a minimal message bot without full guild/member caches.",
+        "Coordinate identify/session-start budgets and reconnect storms with the later shard manager rather than bypassing server concurrency limits."
+      ],
+      "acceptance": [
+        "Fault-injection covers dropped ACKs, reconnect/invalid-session sequences, duplicate/gapped dispatch, compression/fragments and exhausted identify budgets.",
+        "Every documented Gateway section in the upstream inventory has an explicit implementation, model or compatibility decision.",
+        "Presence/member-request APIs enforce intents and deadlines without blocking ordinary event dispatch."
+      ]
+    },
+    {
+      "id": "W04",
+      "title": "Models, serialization, flags, assets and utilities",
+      "milestone": "0.5.x / continuous",
+      "status": "partial",
+      "depends_on": [],
+      "evidence": [
+        "include/yl/discord/models.hpp",
+        "include/yl/discord/embeds.hpp",
+        "src/models.cpp",
+        "src/protocol.cpp",
+        "src/text_internal.hpp"
+      ],
+      "scope": [
+        "Define full versus partial, cached versus fetched, and missing versus explicit-null fields; keep owned snapshots and clear equality/hash/identity behavior.",
+        "Preserve unknown enum values, flag bits and new payload fields; avoid lossy narrowing of Snowflakes, permission strings and future bitfields.",
+        "Build shared User/Member/Guild/Channel/Role/Interaction partial models needed for interactions before waiting for every resource CRUD helper.",
+        "Add CDN Asset helpers for animated/static variants, format/size selection, read/save streaming and expiring attachment URLs with safe download policies.",
+        "Cover colors, UTC timestamps, timezone/calendar conversion, markdown/mention escaping, snowflake time, object references, async iteration and introspection utilities.",
+        "Audit current user metadata, primary guild, avatar decorations/collectibles/nameplates, message snapshots and application/team models against the public inventory.",
+        "Separate read-only received component models from editable builders; do not confuse outgoing file bytes with UI file-picker values.",
+        "Add schema-aware serialization tests for Unicode, optional flags, invalid encodings, integer boundaries and fields introduced/deprecated upstream."
+      ],
+      "acceptance": [
+        "Payload roundtrips preserve omitted/null/unknown distinctions and large IDs; model properties never silently claim unavailable cache/intent data.",
+        "Public type/flag/utility roots in the snapshot are mapped to a typed C++ equivalent or a documented design/access decision.",
+        "Common operations need no JSON authoring, while advanced callers retain safe raw access."
+      ]
+    },
+    {
+      "id": "W05",
+      "title": "Typed events, state and cache policy",
+      "milestone": "0.8.x foundations begin earlier",
+      "status": "partial",
+      "depends_on": [
+        "W03",
+        "W04"
+      ],
+      "evidence": [
+        "include/yl/discord/events.hpp",
+        "src/client.cpp",
+        "tests/events.cpp"
+      ],
+      "scope": [
+        "Cover all documented event families: connection/shards, messages/reactions/polls, guilds/channels/threads/members/roles, invites/integrations, interactions, audit/AutoMod, schedules/stages, voice/soundboard and commerce.",
+        "Provide typed and raw events with consistent cached before/after semantics, including bulk deletes, uncached removals and partial update payloads.",
+        "Extend wait_for/listener APIs beyond Message/Ready/RawEvent without sacrificing predicate isolation, cancellation or ownership during mutation.",
+        "Make caches optional with entry/byte budgets, TTL/eviction, selective member/message storage and a cache-free operating mode.",
+        "Specify state ordering relative to callback invocation and cache misses, deleted references, unavailable guilds and intent-gated fields.",
+        "Bound dispatch queues and slow-listener behavior; define overload policy and ordering guarantees rather than assuming every event completes synchronously.",
+        "Document initial/repeated readiness and event replay/debug recording with explicit retention/redaction controls."
+      ],
+      "acceptance": [
+        "Every upstream event-section family and discord.py event identifier has a tracked handler/model decision; raw ingress alone does not count as typed coverage.",
+        "Cache-free, evicted, unavailable and partial-update fixtures produce documented values and preserve callback lifetimes.",
+        "Long-running dispatch/cancellation tests remain within configured state and queue budgets."
+      ]
+    },
+    {
+      "id": "W06",
+      "title": "Complete prefix-command framework",
+      "milestone": "0.5.x-0.6.x",
+      "status": "partial",
+      "depends_on": [
+        "W01",
+        "W04"
+      ],
+      "evidence": [
+        "include/yl/discord/commands.hpp",
+        "include/yl/discord/arguments.hpp",
+        "src/commands.cpp",
+        "tests/commands.cpp"
+      ],
+      "scope": [
+        "Add command groups/subcommands, command walking/lookup/removal, enabled state, qualified names, aliases and case-insensitive policy.",
+        "Support static/multiple/callable prefixes, mention prefixes, per-guild resolution and explicit whitespace/empty-prefix semantics.",
+        "Extend converters to domain models/mentions, choices/literals/unions, greedy/variadic arguments, ranges, timestamps, attachments and named flags with clear ambiguity rules.",
+        "Provide parameter metadata/defaults, custom converter/transformer injection, clean-content behavior and readable compile/runtime diagnostics.",
+        "Add owner/role/permission/NSFW checks, composite/check-once/global/Cog checks, before/after invocation hooks and documented error-handler precedence.",
+        "Add configurable/dynamic cooldown policies, max concurrency and queue/cancellation behavior; keep aliases from bypassing admission.",
+        "Expose invoke/reinvoke/get_context/process_commands hooks and hybrid-command foundations while retaining default command processing when on_message is overridden.",
+        "Bound parsing/conversion work and avoid implicit unbounded fetches during model conversion; preserve command identity on every failure path."
+      ],
+      "acceptance": [
+        "Every public command/converter/check/error family in the inventory has a mapping; argument quoting, conversion order and callback ownership remain regression-tested.",
+        "Nested/aliased/disabled commands and asynchronous checks interact correctly with cancellation, cooldowns and error routing.",
+        "Common typed commands require short owning callbacks and actionable failures rather than template backtraces alone."
+      ]
+    },
+    {
+      "id": "W07",
+      "title": "Automatic and fully replaceable help",
+      "milestone": "0.5.x; interactive help after UI",
+      "status": "partial",
+      "depends_on": [
+        "W06"
+      ],
+      "evidence": [
+        "src/commands.cpp",
+        "docs/COMMANDS.md",
+        "examples/command_bot.cpp"
+      ],
+      "scope": [
+        "Design a HelpCommand/provider abstraction with replaceable rendering, sending, filtering and error hooks; avoid a fixed non-virtual text formatter as the only extension point.",
+        "Provide automatic default registration in the chosen new Bot API with explicit disable, rename and replacement controls; migrate current opt-in add_help_command users without duplicate-registration breakage.",
+        "Offer default/minimal formatters, generated signatures, argument descriptions, aliases, command groups and Cog categories.",
+        "Support localization, custom embeds and safe text/embed pagination; allow applications to implement their own UI renderer after the component layer exists.",
+        "Define visibility/check/cooldown handling so help neither leaks private commands nor consumes command admission unexpectedly.",
+        "Integrate prefix, hybrid, slash and context-menu discovery where registered, distinguishing remotely synchronized commands from local-only definitions."
+      ],
+      "acceptance": [
+        "Examples cover zero-configuration default help, disabled help, renamed help and a custom class-based formatter without copying internal command code.",
+        "Large/Unicode help stays within the current payload limits; permission filtering does not execute destructive or admission-consuming checks.",
+        "Replacing/removing help during an in-flight callback preserves ownership and error isolation."
+      ]
+    },
+    {
+      "id": "W08",
+      "title": "Cogs, extensions and reload lifecycle",
+      "milestone": "0.5.x-0.6.x",
+      "status": "partial",
+      "depends_on": [
+        "W01",
+        "W06"
+      ],
+      "evidence": [
+        "include/yl/discord/commands.hpp",
+        "src/commands.cpp",
+        "tests/commands.cpp",
+        "examples/class_bot.cpp"
+      ],
+      "scope": [
+        "Add Cog load/unload/setup hooks, listeners, checks and command error handling with deterministic order and rollback on failure.",
+        "Support command groups and application-command GroupCog-like ownership after the CommandTree layer is available.",
+        "Add extension setup/teardown, dependency ordering, registry introspection and transactional load/unload/reload behavior.",
+        "Specify managed background-task, listener, View and modal cleanup; keep callbacks already executing alive during unload/reload.",
+        "Use source registration/factories as the portable default; treat shared-library hot reload as an explicit ABI/lifetime design rather than blindly copying Python module semantics.",
+        "Expose name/qualified-name/documentation metadata and safe duplicate/conflict behavior across prefix and application commands."
+      ],
+      "acceptance": [
+        "Failed setup/reload leaves the previous working registry intact; no callbacks execute through unloaded code.",
+        "Subclass examples demonstrate reusable Cogs containing commands, listeners, tasks and later UI/application commands.",
+        "Concurrent unload, cancellation and task completion have bounded, documented cleanup behavior."
+      ]
+    },
+    {
+      "id": "W09",
+      "title": "Managed background loops and scheduling",
+      "milestone": "0.5.x-0.6.x",
+      "status": "planned",
+      "depends_on": [
+        "W01",
+        "W08"
+      ],
+      "evidence": [],
+      "scope": [
+        "Provide loop/start/stop/cancel/restart APIs with before/after/error hooks, running/failed state, task access and iteration counters.",
+        "Support fixed intervals and timezone-aware calendar schedules, interval changes and well-defined daylight-saving/clock-change behavior.",
+        "Add bounded reconnect/backoff and configurable retryable exception classes without swallowing permanent application errors.",
+        "Coordinate readiness waits, overlap prevention, missed ticks, catch-up policy and shutdown/Cog cancellation.",
+        "Separate clean stop-after-current-iteration from immediate cancellation and define cancellation during startup/after-loop hooks."
+      ],
+      "acceptance": [
+        "Injected-clock tests cover reconnect, stop/cancel/restart races, scheduling changes, DST and shutdown while a callback is suspended.",
+        "Loop ownership is released after Cog unload; no hidden worker/thread survives client destruction.",
+        "Examples match the practical tasks.loop use cases with clear coroutine errors."
+      ]
+    },
+    {
+      "id": "W10",
+      "title": "Interaction ingress and response lifecycle",
+      "milestone": "0.6.x",
+      "status": "planned",
+      "depends_on": [
+        "W02",
+        "W03",
+        "W04"
+      ],
+      "evidence": [],
+      "scope": [
+        "Parse every current interaction type, resolved values, locales, authorizing owners/install contexts, permissions, entitlements and partial DM/guild data.",
+        "Support Gateway ingress and an optional framework-neutral HTTP adapter with PING handling and verification of the original signed body and timestamp.",
+        "Implement initial reply, defer, message update/deferred update, autocomplete, modal opening and supported callback-response metadata with an explicit one-initial-response state machine.",
+        "Enforce the current initial-response deadline and token lifetime from the reviewed specification; define expired/acknowledged errors and safe concurrent response attempts.",
+        "Provide original-response fetch/edit/delete and followup send/edit/delete, ephemeral policy, attachment retention and typed callback results.",
+        "Keep interaction/webhook credentials out of repr/logs/URLs exposed to diagnostics; bound signed payloads, deduplicate retried ingress and handle out-of-order HTTP delivery appropriately.",
+        "Keep automatic defer configurable and race-safe; do not double-respond or blindly retry an uncertain initial callback.",
+        "Track activity-launch/entry-point callback variants with explicit platform-access requirements rather than promising unsupported application modes."
+      ],
+      "acceptance": [
+        "Signed HTTP fixtures reject tampered bodies/signatures and support verification without altering the body before validation.",
+        "Deadline expiry, concurrent initial replies, defer/followup/edit sequences and ephemeral/component payloads pass state-machine fixtures.",
+        "A minimal slash bot and HTTP-only interaction example work without full guild/member caches or raw JSON construction."
+      ]
+    },
+    {
+      "id": "W11",
+      "title": "CommandTree, slash, context menus and hybrid commands",
+      "milestone": "0.6.x",
+      "status": "planned",
+      "depends_on": [
+        "W10",
+        "W06",
+        "W07"
+      ],
+      "evidence": [],
+      "scope": [
+        "Provide a Bot-integrated CommandTree with typed slash commands, user/message context menus, groups/subcommands and stable local lookup/removal.",
+        "Implement global/guild command CRUD, diff/preview sync, opt-in destructive deletion, stable IDs and explicit remote/local reconciliation.",
+        "Support parameter naming/descriptions, required/default values, choices, autocomplete, min/max values/lengths, channel constraints, attachments and current timestamp transforms.",
+        "Support user/guild installs, interaction contexts, default permissions, age restriction, localization/translation and supported entry-point command modes.",
+        "Implement tree/global/Cog/local checks, converters/transformers, cooldowns and error/completion hooks with asynchronous callback ownership.",
+        "Add hybrid prefix/slash definitions and document unsupported argument shapes instead of silently changing conversion semantics.",
+        "Handle command-registration budgets, stale remote signatures, partial sync failures and permissions endpoints requiring OAuth2 grants."
+      ],
+      "acceptance": [
+        "Contract tests cover slash/user/message/group/autocomplete payloads and synchronization without deleting unrelated application commands.",
+        "Bot.tree-style examples, Cog application commands and hybrid commands use a coherent owning C++ interface.",
+        "DM/user-install and guild-installed invocations resolve incomplete model data and permissions consistently."
+      ]
+    },
+    {
+      "id": "W12",
+      "title": "Legacy components, buttons, selects and View",
+      "milestone": "0.7.x",
+      "status": "planned",
+      "depends_on": [
+        "W10"
+      ],
+      "evidence": [],
+      "scope": [
+        "Implement read models and builders for ActionRow and every documented button style, including link/premium behavior and non-callback controls where applicable.",
+        "Implement String/User/Role/Mentionable/Channel Select menus, options, defaults, placeholders, required/min/max values and typed resolved selections.",
+        "Provide class/callback View APIs with custom IDs, interaction checks, errors, timeout, stop/wait and disabled/replaced controls.",
+        "Route interactions by message/custom ID with collision handling and state ownership; support message edit, deletion and fetched-component reconstruction.",
+        "Support persistent and dynamic item registration with explicit durable state/versioning expectations and restart recovery hooks.",
+        "Validate current per-container and nesting rules, UTF-8 limits and numeric component IDs separately from custom IDs."
+      ],
+      "acceptance": [
+        "Every current button/select category has create/edit/parse and callback fixtures, including controls that do not generate callbacks.",
+        "Timeout, deletion, concurrent clicks, duplicate IDs and View removal during suspended handlers are deterministic and leak-free.",
+        "An ordinary paginator/confirmation/role-selection example requires no raw REST/JSON or manual callback table."
+      ]
+    },
+    {
+      "id": "W13",
+      "title": "Components V2 and LayoutView",
+      "milestone": "0.7.x",
+      "status": "planned",
+      "depends_on": [
+        "W12",
+        "W04"
+      ],
+      "evidence": [],
+      "scope": [
+        "Implement Container, Section, TextDisplay, Thumbnail, MediaGallery, File and Separator with compatible ActionRows/buttons/selects and read-only incoming counterparts.",
+        "Provide nested LayoutView-style class/builders, traversal/counting and fluent or named-field construction with owning media/attachment references.",
+        "Apply IS_COMPONENTS_V2 correctly on send/edit and enforce the platform's irreversible flag transition and content/embed/poll/sticker incompatibilities.",
+        "Handle section accessories, file/gallery/spoiler metadata, media descriptions and allowed nesting/count/size limits from the current reference rather than guessed fixed layouts.",
+        "Expose uploaded attachments through the appropriate display components and preserve attachment retention/allowed-mention policy while editing layouts.",
+        "Support reconstructing/editing received layouts and safe conversion boundaries between legacy View and V2 layouts."
+      ],
+      "acceptance": [
+        "The component-type inventory has explicit coverage for all current message V2 types and their placement/validation rules.",
+        "Prefix and slash examples send, fetch, edit and paginate a real modeled layout; embeds are never presented as a substitute for V2 support.",
+        "Invalid nested layouts, incompatible payload fields and attempts to clear the V2 flag fail before network I/O with useful errors."
+      ]
+    },
+    {
+      "id": "W14",
+      "title": "Modern modals and every current modal control",
+      "milestone": "0.7.x",
+      "status": "planned",
+      "depends_on": [
+        "W12",
+        "W13"
+      ],
+      "evidence": [],
+      "scope": [
+        "Provide Modal subclasses/callbacks with submit/error/timeout/stop lifecycle and safe ownership after the originating View/Cog is removed.",
+        "Implement Label/TextDisplay modal layout, TextInput and every currently permitted select type with the current placement/required/default rules.",
+        "Implement modal FileUpload/file-type filtering, RadioGroup, CheckboxGroup and Checkbox with distinct types from outgoing message-file bytes.",
+        "Parse submitted values and resolved attachments/users/roles/channels without requiring a full cache; distinguish absent, empty, false and invalid values.",
+        "Validate every allowed parent/child placement and unsupported legacy/deprecated schema, rather than treating all V2 message elements as modal elements.",
+        "Coordinate show-modal versus initial-response state, nested interaction restrictions, expiration and duplicate/late submissions."
+      ],
+      "acceptance": [
+        "All component types marked Modal in the upstream inventory have parsing, serialization, validation and callback tests.",
+        "Examples demonstrate a modern multi-control form and file-picker submission, including invalid, cancelled and timed-out forms.",
+        "Submitted external files are not downloaded automatically; access and streaming limits are explicit."
+      ]
+    },
+    {
+      "id": "W15",
+      "title": "Roles, permissions and effective access",
+      "milestone": "0.8.x; minimal models earlier",
+      "status": "planned",
+      "depends_on": [
+        "W04",
+        "W02"
+      ],
+      "evidence": [],
+      "scope": [
+        "Implement current permission flags, role models/tags/icons/managed status, role CRUD/order and member counts where supported.",
+        "Implement channel/member/role overwrite CRUD and effective-permission resolution for owners, administrators, hierarchy, timeouts, threads and partial objects.",
+        "Support newer server-side member/role permission endpoints without confusing their results with locally computed incomplete-cache permissions.",
+        "Preserve unknown future permission bits and expose raw bitfields without silent narrowing or treating unknown flags as granted.",
+        "Reuse explicit permission/role checks in commands, interactions and UI; distinguish missing bot permissions from missing invoking-user permissions."
+      ],
+      "acceptance": [
+        "Table-driven permission fixtures cover hierarchy, overwrite precedence, administrator/owner behavior, timeouts and thread inheritance.",
+        "Unknown bits and incomplete state are preserved or produce explicit indeterminate/fetch-required results.",
+        "Role mutation and checks report the applicable API permission/hierarchy failure without a speculative client-side success claim."
+      ]
+    },
+    {
+      "id": "W16",
+      "title": "Users, members, DMs and moderation",
+      "milestone": "0.8.x; resolved targets earlier",
+      "status": "planned",
+      "depends_on": [
+        "W15",
+        "W05"
+      ],
+      "evidence": [],
+      "scope": [
+        "Implement User/ClientUser/Member fetch/edit, profiles/avatars/banners/primary-guild metadata and explicit partial-member semantics.",
+        "Support bot-authorized DM creation/sends, leave-guild, current user updates and typing/history conveniences with correct blocked/permission errors.",
+        "Add member list/search/chunking, role assignment, nicknames, timeouts, kick/ban/unban/bulk bans and prune workflows with audit reasons.",
+        "Respect privileged intents, hierarchy, pagination and rate limits; return partial results for bulk operations rather than hiding per-target failures.",
+        "Keep OAuth-only user connections/group-DM recipient/account-link operations behind the separate OAuth2 capability path."
+      ],
+      "acceptance": [
+        "Member intents/cache absence, departed users, blocked DMs, hierarchy failures and bulk partial failures have explicit fixtures.",
+        "User/member converters and context menus work from interaction-resolved data without an automatic complete-member download.",
+        "Destructive operations require explicit application calls and expose their audit/error results."
+      ]
+    },
+    {
+      "id": "W17",
+      "title": "Guilds, onboarding, integrations, invites and templates",
+      "milestone": "0.8.x",
+      "status": "planned",
+      "depends_on": [
+        "W15",
+        "W16"
+      ],
+      "evidence": [],
+      "scope": [
+        "Implement Guild/preview fetch/edit, features/limits/assets, availability, bans/invites/integrations and supported administrative configuration.",
+        "Cover welcome screens, onboarding prompts/options/default channels, widgets, vanity invites, incident actions and current safety settings.",
+        "Implement templates, invite fetch/create/delete/resolve, scheduled-event invite associations and permission/audit requirements.",
+        "Model integration accounts/applications, partial/deleted integrations and bot/application-specific resource limitations.",
+        "Keep creation/deletion and OAuth-authorized actions constrained to currently supported bot/app capabilities; do not recreate removed API behavior merely because older examples used it."
+      ],
+      "acceptance": [
+        "Every Guild/Invite/Template resource endpoint in the snapshot is assigned a wrapper, access-gated decision or explicit deprecated mapping.",
+        "Onboarding, unavailable guilds, optional premium features and partial integration/invite targets roundtrip correctly.",
+        "Guild edits and destructive operations preserve audit reasons and report permission/access restrictions."
+      ]
+    },
+    {
+      "id": "W18",
+      "title": "All channel types, forums, media and threads",
+      "milestone": "0.8.x",
+      "status": "planned",
+      "depends_on": [
+        "W15",
+        "W17"
+      ],
+      "evidence": [],
+      "scope": [
+        "Implement text/announcement/category/voice/stage/forum/media/DM/partial channel models and supported CRUD, ordering, permissions and typing.",
+        "Add thread creation from messages or standalone/forum/media posts, join/leave/member management and active/archived/private pagination.",
+        "Model forum/media tags, post defaults, applied tags, archive/lock/invite/slowmode settings and ownership/access behavior.",
+        "Support announcement following/crossposting and voice channel status where documented; distinguish text-in-voice from audio transport.",
+        "Track group-DM recipient operations as OAuth/access-gated rather than pretending bot-token support.",
+        "Integrate channel/member/role permission endpoints, uncached IDs and converters with explicit fetch policy."
+      ],
+      "acceptance": [
+        "Every channel/thread operation in the upstream inventory has a planned API/access decision and paginated response fixture.",
+        "Archived/locked/private thread transitions and forum/media defaults do not lose fields or bypass permission checks.",
+        "Examples cover a forum post, thread history/member lifecycle and cache-free channel lookup."
+      ]
+    },
+    {
+      "id": "W19",
+      "title": "Complete messages, embeds, attachments and history",
+      "milestone": "0.5.x foundations / 0.9.x breadth",
+      "status": "partial",
+      "depends_on": [
+        "W02",
+        "W04"
+      ],
+      "evidence": [
+        "src/models.cpp",
+        "src/rest.cpp",
+        "src/embeds.cpp",
+        "src/files.cpp",
+        "src/multipart.cpp",
+        "tests/files.cpp",
+        "tests/embeds.cpp"
+      ],
+      "scope": [
+        "Expand full/partial Message models for references, forwards/snapshots, interaction metadata, calls, system messages, flags, stickers, mentions, edits and deleted references.",
+        "Add history/cursor iterators, bulk deletion, current paginated pins, pin/unpin, publishing/crossposting and the documented guild-message search endpoint with access/availability handling.",
+        "Complete supported rich embed/attachment fields, suppressed notifications/embeds, scheduled delete, TTS and message flags without implying arbitrary outgoing fields are valid.",
+        "Add explicit file/stream/filesystem sources, spoiler/description/voice-message metadata, progress, cancellation and zero/low-copy multipart replay constraints.",
+        "Derive effective upload limits from current app/interaction/server context when available, keeping configurable library safety caps distinct from Discord platform limits.",
+        "Preserve omitted/null/clear edits, mention suppression, retained attachments and permission-sensitive fields across ordinary, webhook, interaction and V2 message operations.",
+        "Handle new/deprecated pin routes and other compatibility aliases deliberately, and keep message schemas ready for unknown fields/types."
+      ],
+      "acceptance": [
+        "Message resource routes and public Message/PartialMessage/Attachment/Embed/File members are mapped to wrappers or explicit access/deprecation decisions.",
+        "History/pins/search pagination, bulk age restrictions, attachment retries and cancelled streamed uploads pass bounded-memory fixtures.",
+        "Payload equivalence tests verify text/embed/file/forward/ephemeral/V2 variants against the current reviewed schema."
+      ]
+    },
+    {
+      "id": "W20",
+      "title": "Reactions, emoji, stickers and expressive metadata",
+      "milestone": "0.9.x",
+      "status": "partial",
+      "depends_on": [
+        "W19",
+        "W15"
+      ],
+      "evidence": [
+        "src/rest.cpp",
+        "src/protocol.cpp",
+        "tests/network.cpp"
+      ],
+      "scope": [
+        "Extend own reactions to user/all/emoji clearing and paginated reaction-user enumeration, including normal/burst reaction metadata and typed raw/cached events.",
+        "Add Unicode/partial/custom Emoji models, formatting, guild/application emoji CRUD, limits/assets and role/permission restrictions.",
+        "Add standard/guild stickers, packs/items, format/asset handling and supported create/edit/delete/send operations.",
+        "Preserve premium/availability flags, deleted emoji references, reaction count details and unknown expressive metadata."
+      ],
+      "acceptance": [
+        "Encoded emoji paths, burst/normal counts, pagination, unavailable emoji and sticker formats have fixtures.",
+        "Application versus guild emoji ownership/auth and audit requirements are enforced per endpoint.",
+        "Unsupported formats or inaccessible media do not masquerade as successful sends/downloads."
+      ]
+    },
+    {
+      "id": "W21",
+      "title": "Polls and vote lifecycle",
+      "milestone": "0.9.x",
+      "status": "planned",
+      "depends_on": [
+        "W19",
+        "W05"
+      ],
+      "evidence": [],
+      "scope": [
+        "Implement Poll/PollAnswer/media/layout models, creation, duration/multiple-choice settings and current send/edit restrictions.",
+        "Provide poll expiry/end operations, result/count interpretation and paginated voters for each answer.",
+        "Dispatch raw/cached vote add/remove events and preserve partial/unfinalized result semantics.",
+        "Integrate message, webhook and interaction payload support only where the current platform allows polls."
+      ],
+      "acceptance": [
+        "Poll create/end/voter pagination and incomplete/final results match the current schema.",
+        "Deletion, uncached votes, timeout and permission failures are covered without assuming complete vote caches.",
+        "Poll helpers interact correctly with deferred interaction responses and incompatible V2 payload rules."
+      ]
+    },
+    {
+      "id": "W22",
+      "title": "Webhooks, webhook messages and HTTP event delivery",
+      "milestone": "0.9.x",
+      "status": "planned",
+      "depends_on": [
+        "W02",
+        "W19",
+        "W10"
+      ],
+      "evidence": [],
+      "scope": [
+        "Implement webhook create/list/fetch/edit/delete and execution with URL/token credentials, wait semantics, thread/forum targets and supported payload variants.",
+        "Provide WebhookMessage/partial target edit/delete/fetch helpers and safe shared attachment/embed/component support.",
+        "Expose an async webhook client independent of a Gateway Client; evaluate an explicit blocking adapter equivalent to SyncWebhook without blocking the event loop or claiming a Python-only API is already ported.",
+        "Treat outgoing Webhook Events separately from incoming webhook execution and interaction callbacks: verify signatures, acknowledge, deduplicate and handle retries/order semantics.",
+        "Parse application-authorized/deauthorized, entitlement, lobby and supported social message event envelopes according to access scope.",
+        "Protect webhook credentials in URLs/logs, bound request bodies and define replay/idempotency behavior for network uncertainty."
+      ],
+      "acceptance": [
+        "Webhook execution, followup/original-response reuse and independent HTTP clients have auth-isolation and payload fixtures.",
+        "Event signature/PING/retry/duplicate/out-of-order cases are tested; no real event endpoint is required in PR CI.",
+        "Any blocking adapter is explicit, opt-in and guarded against event-loop use; unsupported modes remain documented decisions."
+      ]
+    },
+    {
+      "id": "W23",
+      "title": "Audit logs and Auto Moderation",
+      "milestone": "0.10.x",
+      "status": "planned",
+      "depends_on": [
+        "W15",
+        "W17",
+        "W05"
+      ],
+      "evidence": [],
+      "scope": [
+        "Implement audit-log async pagination, action/category enums, target/actor resolution, optional reasons and typed before/after diffs including unknown change keys.",
+        "Cover current action-specific diff fields, secondary entries, deleted targets, integration/webhook references and partial user/member state.",
+        "Implement AutoMod rule list/get/create/edit/delete with keyword/regex/preset/mention-spam triggers, exempt roles/channels and supported actions.",
+        "Add typed/raw rule create/update/delete and action-execution events with permission/intents and optional message-content handling.",
+        "Expose current rule limits and validation errors from reviewed schemas without promising that cached authorization is authoritative."
+      ],
+      "acceptance": [
+        "Audit actions and AutoMod endpoint/event families are traceable to typed models and fixtures.",
+        "Unknown diffs, deleted actors/targets and unavailable content do not crash parsing or fabricate complete values.",
+        "Rule mutations preserve audit reasons, permission errors and regex/limit field-error details."
+      ]
+    },
+    {
+      "id": "W24",
+      "title": "Scheduled events and stage instances",
+      "milestone": "0.10.x",
+      "status": "planned",
+      "depends_on": [
+        "W17",
+        "W18",
+        "W05"
+      ],
+      "evidence": [],
+      "scope": [
+        "Implement scheduled-event create/fetch/list/edit/delete, entity types/privacy/status, recurrence/exceptions and external-location metadata where currently supported.",
+        "Support interested-user enumeration, event-user add/remove updates and invite/event associations with pagination.",
+        "Implement StageInstance CRUD, stage metadata, speaker/request-to-speak voice-state helpers and stage-specific permission rules.",
+        "Preserve optional dates, canceled/completed state and partial linked channel/member data."
+      ],
+      "acceptance": [
+        "Schedule status transitions, recurring-event fields and interested-user pagination have time/permission fixtures.",
+        "Stage instance lifecycle and voice-state dependencies are tested separately from audio playback.",
+        "Current upstream schedule/stage fields and event families have explicit model mappings."
+      ]
+    },
+    {
+      "id": "W25",
+      "title": "Soundboard and voice effects",
+      "milestone": "0.10.x metadata; playback after W28",
+      "status": "planned",
+      "depends_on": [
+        "W18",
+        "W05"
+      ],
+      "evidence": [],
+      "scope": [
+        "Implement default/guild sound listing/fetch/create/edit/delete and sound assets, volume, emoji, availability and ownership metadata.",
+        "Support Gateway soundboard requests/chunks and sound create/update/delete events.",
+        "Add send-sound/voice-effect helpers with voice connection, external-sound permission and current source-guild requirements.",
+        "Model voice channel effect animation/sound metadata; do not mistake metadata events for implemented audio transport."
+      ],
+      "acceptance": [
+        "Soundboard resource endpoints and public sound/effect model families have typed fixtures.",
+        "Playback-dependent operations stay unavailable until the voice handshake/encryption prerequisites in W28 are satisfied.",
+        "Missing permissions, unavailable sounds, partial caches and cross-guild requests fail explicitly."
+      ]
+    },
+    {
+      "id": "W26",
+      "title": "Applications, teams, OAuth2 and linked roles",
+      "milestone": "0.11.x; install primitives earlier",
+      "status": "planned",
+      "depends_on": [
+        "W02",
+        "W04"
+      ],
+      "evidence": [],
+      "scope": [
+        "Implement AppInfo/partial info, teams/members/ownership, installation parameters, application flags and supported current application edits.",
+        "Add OAuth2 scope/permission URL builders, authorization-code/PKCE and client-credential adapters, refresh/revoke/expiry handling with injected credential storage.",
+        "Support guild/user installation contexts, account connections and approved OAuth-only operations with distinct bearer-grant capabilities.",
+        "Implement application role-connection metadata and per-user linked-role connection data, with localization and explicit grant requirements.",
+        "Cover discovery/verification/privacy-policy/terms configuration as documented prerequisites, not SDK-created approval or permissions.",
+        "Keep application identity/game-profile and Social SDK extensions explicitly tracked under W31 rather than silently omitting them."
+      ],
+      "acceptance": [
+        "OAuth grant/expiry/revocation, install URLs and team/application payloads have synthetic contract fixtures.",
+        "Bot tokens, user grants and application credentials are never interchangeable or persisted by hidden defaults.",
+        "Public application/team/role-connection surfaces have typed mappings and documented platform prerequisites."
+      ]
+    },
+    {
+      "id": "W27",
+      "title": "SKUs, entitlements, subscriptions and purchases",
+      "milestone": "0.11.x",
+      "status": "planned",
+      "depends_on": [
+        "W26",
+        "W10",
+        "W05"
+      ],
+      "evidence": [],
+      "scope": [
+        "Implement SKU/entitlement/subscription models and supported list/fetch/test/create/delete/consume operations with cursor pagination.",
+        "Parse premium buttons, role subscriptions, purchase notifications and interaction entitlements without treating a cached entitlement as permanently valid access.",
+        "Support entitlement/subscription create/update/delete Gateway and webhook event envelopes and expiration/ownership semantics.",
+        "Provide test-entitlement examples and safe raw access while leaving billing, storefront rules and business authorization decisions to the application.",
+        "Track premium-app eligibility, regional/access restrictions and reviewed scopes explicitly; no account creation, purchase or automatic charge belongs in SDK initialization."
+      ],
+      "acceptance": [
+        "Current commerce resource routes and public models/events have fixtures for expired, revoked, consumed and paginated states.",
+        "No live billing action runs in automated tests; examples use synthetic data or explicitly requested test entitlements.",
+        "Access failures and unknown future entitlement/subscription types remain representable."
+      ]
+    },
+    {
+      "id": "W28",
+      "title": "Voice transport, DAVE and audio sources",
+      "milestone": "0.12.x; dependency research earlier",
+      "status": "planned",
+      "depends_on": [
+        "W01",
+        "W03",
+        "W18"
+      ],
+      "evidence": [],
+      "scope": [
+        "Implement voice state/server handshakes, current voice Gateway version/opcodes, UDP discovery, RTP sequencing/timing, speaking state and reconnect/buffered resume.",
+        "Implement supported transport encryption and DAVE E2EE negotiation/transitions/MLS membership changes with reviewed maintained crypto dependencies such as Discord libdave; do not design custom cryptography.",
+        "Track DAVE binary frames, protocol-version changes, key epochs and secret cleanup; recheck the current mandatory-E2EE policy before claiming voice support.",
+        "Provide VoiceClient/VoiceProtocol extension points, move/connect/disconnect, latency/state and bounded playback queues.",
+        "Provide PCM/Opus AudioSource, encoding, streaming, volume and pause/resume/stop/after callbacks with strict event-loop isolation and pacing.",
+        "Offer optional FFmpeg process adapters with cancellation/cleanup, safe argument passing, dependency/license discovery and clear external-binary requirements.",
+        "Separate outgoing playback parity from voice receive, recording, video and screen-sharing proposals; those need explicit protocol/support/privacy scope review rather than an implied capability claim."
+      ],
+      "acceptance": [
+        "No voice release is declared usable without current encryption/DAVE interoperability and reconnect/key-transition fixtures.",
+        "Audio timing, cancellation, subprocess cleanup, missing codecs and bounded buffers pass tests on supported platforms.",
+        "Optional audio/crypto dependencies do not enlarge the default message-only install without an explicit feature option."
+      ]
+    },
+    {
+      "id": "W29",
+      "title": "Sharding, multi-client operation and scale",
+      "milestone": "0.13.x and later",
+      "status": "planned",
+      "depends_on": [
+        "W03",
+        "W05",
+        "W30"
+      ],
+      "evidence": [],
+      "scope": [
+        "Provide manual and automatic shard managers, shard IDs/counts/info/events, per-shard lifecycle and multi-client isolation.",
+        "Coordinate identify concurrency/session-start quotas, reconnect storms and reshard/restart plans without assuming shared caches/process state.",
+        "Support pluggable coordination across processes as an optional adapter, with bounded dispatch/REST admission and explicit per-account/global limits.",
+        "Define executor/thread ownership, per-shard state routing, guild partitioning and error aggregation.",
+        "Run sustained-load, partial-outage and rolling-shutdown experiments with recorded queue, memory and latency distributions."
+      ],
+      "acceptance": [
+        "Synthetic multi-shard failures do not exhaust identify budgets or leak tasks/queues across clients.",
+        "AutoShardedClient/Bot use cases have typed equivalents and per-shard observability without mandatory external infrastructure.",
+        "Large-bot benchmarks report workloads, caches, hardware, compiler and dependencies instead of universal speed claims."
+      ]
+    },
+    {
+      "id": "W30",
+      "title": "Advanced extension points, observability and performance",
+      "milestone": "every 0.x milestone",
+      "status": "partial",
+      "depends_on": [
+        "W01",
+        "W02"
+      ],
+      "evidence": [
+        "include/yl/discord/network.hpp",
+        "include/yl/discord/client.hpp",
+        "benchmarks/offline.cpp",
+        "benchmarks/run.py",
+        "docs/BENCHMARKS.md"
+      ],
+      "scope": [
+        "Expose safe raw REST/Gateway, transport/middleware hooks, serializer/converter injection and executor access without requiring beginners to configure internals.",
+        "Add opt-in structured logging, metrics/tracing and error/queue/REST/heartbeat/cache diagnostics with stable names and comprehensive credential/content redaction.",
+        "Define memory/queue/allocator/worker budgets and an advanced configuration surface with conservative defaults and no global background telemetry.",
+        "Profile model/JSON copies, coroutine allocations, cooldown cleanup, multipart buffers and cache churn before adding pools, arenas, LTO or allocator hooks.",
+        "Expand paired benchmark scenarios to unknown commands, converters/checks, interaction serialization, V2 layouts, cache-free/cached events and streaming uploads.",
+        "Measure p50/p95/p99, throughput, CPU, RSS/peak/retained memory, idle work, build time and distribution size across static/shared and equivalent feature sets.",
+        "Separate real network/Discord limits from CPU work, retain raw data and establish regression thresholds on controlled runners rather than noisy shared CI timings."
+      ],
+      "acceptance": [
+        "Instrumentation is bounded and opt-in, and does not reveal message bodies, bot/OAuth/webhook tokens or crypto keys by default.",
+        "Low-level customization preserves auth/rate-limit/cancellation invariants unless a separately documented unsafe boundary is deliberately selected.",
+        "Each optimization has a reproducible bottleneck, before/after evidence and correctness/ownership checks."
+      ]
+    },
+    {
+      "id": "W31",
+      "title": "Access-gated and adjacent platform surfaces",
+      "milestone": "research gates; explicit optional modules",
+      "status": "research",
+      "depends_on": [],
+      "evidence": [],
+      "scope": [
+        "Review Lobby REST, linked channels/messages and application identity/profile/game-stats endpoints individually for authentication, approval and product applicability; retain their route inventory even when not part of bot-core parity.",
+        "Track Social SDK provisional accounts, account merging/linking, friends/relationships, game invites and game voice as a separate integration scope, not as bot-token/self-bot functionality.",
+        "Track Embedded App SDK Activities, entry-point launch callbacks, activity purchases and browser/desktop bridges separately from the C++ bot runtime.",
+        "Review RPC, Certified Devices and desktop rich-presence surfaces for current authorization/deprecation and SDK ownership; do not promise unsupported user-account automation.",
+        "Track website component-embed/link-preview output as an optional website integration, distinct from outgoing bot embeds and Components V2 messages.",
+        "For every gated surface record supported credentials, approval restrictions, dependency/license costs, intended C++ adapter and a written included/deferred/out-of-scope decision with a reason.",
+        "Keep undocumented/private APIs, self-bots, token harvesting and platform approval bypasses outside supported bot-library scope."
+      ],
+      "acceptance": [
+        "Every official index page outside normal bot-core APIs has a named scope decision; no adjacent surface disappears from the inventory without explanation.",
+        "Scope exclusions never masquerade as implemented discord.py parity or imply that raw requests bypass authorization.",
+        "Optional integrations are revisited when public bot applicability changes upstream, with explicit examples and access prerequisites."
+      ]
+    },
+    {
+      "id": "W32",
+      "title": "Builds, packaging, releases and supply chain",
+      "milestone": "every 0.x milestone",
+      "status": "partial",
+      "depends_on": [],
+      "evidence": [
+        "CMakeLists.txt",
+        "conanfile.py",
+        "packaging/vcpkg/portfile.cmake.in",
+        "packaging/msys2/PKGBUILD.in",
+        ".github/workflows/ci.yml",
+        ".github/workflows/publish.yml"
+      ],
+      "scope": [
+        "Maintain Linux GCC/Clang, Windows MSVC/MinGW/UCRT static/shared consumers and add declared macOS/AppleClang/ARM64/libc++ coverage with explicit support levels.",
+        "Audit symbol exports, transitive dependencies, relocatable CMake/pkg-config installs, compiler/standard-library ABI policy and pre-1.0 runtime naming.",
+        "Keep optional voice/crypto/HTTP-server/telemetry adapters isolated; support dependency pinning, offline builds and a documented minimal install.",
+        "Continue version-to-immutable-tag-to-tested-assets-to-published-release automation, idempotent retries, checksums and source-only credential-safe packaging.",
+        "Add reproducibility/SBOM/provenance/signing decisions, dependency/license/CVE review and platform trust-store/runtime deployment checks.",
+        "Maintain project-hosted Conan/vcpkg/MSYS2 recipes and optional configured uploads; central registry acceptance remains a distinct reviewed submission, never a false availability claim.",
+        "Reduce duplicated expensive CI matrices for documentation/version workflows while retaining source/schema checks and frozen-tag retry compatibility."
+      ],
+      "acceptance": [
+        "Every declared compiler/platform/package combination has a relocated installed consumer and version/dependency check.",
+        "Publication cannot silently stop at a tag, overwrite an immutable release or upload unrelated dependencies/secrets.",
+        "Optional integrations have independently testable package features and complete third-party notices."
+      ]
+    },
+    {
+      "id": "W33",
+      "title": "Compatibility, security and adversarial verification",
+      "milestone": "every 0.x milestone",
+      "status": "partial",
+      "depends_on": [
+        "W01"
+      ],
+      "evidence": [
+        "tests/core.cpp",
+        "tests/network.cpp",
+        "tests/events.cpp",
+        "tests/test_release.py",
+        "SECURITY.md",
+        "docs/TESTING.md"
+      ],
+      "scope": [
+        "Maintain unit, local REST/Gateway, installed-consumer and static/shared tests plus sanitizer and leak/cancellation checks for each new feature family.",
+        "Add property/fuzz tests for JSON, command parsing, component/modal trees, signatures, compression, multipart streams and unknown enum/permission values.",
+        "Add fault injection for packet loss, stalled transfers, out-of-order/duplicate events, 429 remaps, response uncertainty, deadlines and resource exhaustion.",
+        "Build contract/payload fixtures from the reviewed protocol, distinguish application safety caps from Discord limits and document deprecated/removed endpoint handling.",
+        "Keep real credentials, live purchases and destructive account/server actions out of CI; define an owner-run opt-in authenticated smoke suite for currently shipped capabilities.",
+        "Review URL/download policies, signed HTTP ingress, sensitive logs, dependency vulnerabilities, audit reasons and least-privilege operation requirements.",
+        "Track API/source/ABI compatibility and migration examples; a planned item is complete only after implementation, documentation and appropriate tests exist."
+      ],
+      "acceptance": [
+        "Every completed feature points to executable evidence and a test covering its non-happy-path lifecycle; no broad raw-JSON test is used to claim typed feature coverage.",
+        "Security/cancellation/bounded-memory regressions block publication; unstable external mirrors are retried without removing checks.",
+        "Live-platform validation is reported only when explicitly executed with the owner's authorization."
+      ]
+    },
+    {
+      "id": "W34",
+      "title": "Developer ergonomics, reference and examples",
+      "milestone": "every 0.x milestone",
+      "status": "partial",
+      "depends_on": [],
+      "evidence": [
+        "README.md",
+        "docs/API.md",
+        "docs/COMMANDS.md",
+        "docs/COMPARISON.md",
+        "examples/class_bot.cpp",
+        "examples/ping_bot.cpp"
+      ],
+      "scope": [
+        "Provide minimal function-based and subclass/Cog examples for each shipped feature, then realistic prefix/slash/context-menu/View/LayoutView/modal/task/voice compositions.",
+        "Prefer owning values, coherent naming/options/builders and clear compiler diagnostics; avoid mandatory raw JSON, lifetime tricks or excessive boilerplate for ordinary bots.",
+        "Publish reference/cookbook, setup/intents/permission guidance, custom help/error hooks, localization, cancellation, extension and performance recipes.",
+        "Maintain an honest discord.py mapping with full/partial/planned/access-gated statuses, known differences and explicit unsupported behavior.",
+        "Add migration guides for each minor/API change and document how Python constructs map to C++ concepts without pretending decorators/modules/GC have identical semantics.",
+        "Review tutorial snippets as compiled examples where practical and test package installation from clean, relocated environments.",
+        "Collect usability review against concrete developer tasks and include advanced escape-hatch examples without exposing implementation noise in the basic API."
+      ],
+      "acceptance": [
+        "An ordinary developer can follow a documented example for each advertised feature without unmentioned manual REST or ownership machinery.",
+        "Documentation and examples use APIs that actually compile for the advertised version and identify partial support clearly.",
+        "The feature-comparison page never claims complete parity from a broad roadmap heading or raw transport access."
+      ]
+    },
+    {
+      "id": "W35",
+      "title": "Coverage registry and upstream-change review",
+      "milestone": "every 0.x milestone",
+      "status": "partial",
+      "depends_on": [],
+      "evidence": [
+        "scripts/audit_roadmap.py",
+        "docs/roadmap/coverage.json",
+        "docs/roadmap/upstream.json"
+      ],
+      "scope": [
+        "Maintain dated official Discord resource/section/route/component and discord.py documented-symbol inventories, with source URLs, body hashes and a pinned C++ audit commit.",
+        "Map every captured page, public API root and component type to a named workstream; retain explicit reasons for gated/adjacent surfaces.",
+        "Keep roadmap anchors, dependencies, acceptance criteria, evidence paths and the Mermaid view consistent; reject unmapped items and dependency cycles.",
+        "Run the offline registry audit in source CI and add focused tests for missing mappings, new components, cycles and misleading completion/status evidence.",
+        "Before each feature-family implementation/release, run the explicit upstream comparison; review new methods, fields, permissions, opcodes, deprecations and changelog entries before updating the snapshot.",
+        "Require implementation plus serialization/behavior/cancellation/error/permission examples and tests before promoting a capability; track deferred work rather than deleting it.",
+        "Document that mapped/reviewed inventory counts are planning coverage, not implemented-feature percentages or a guarantee against future upstream changes."
+      ],
+      "acceptance": [
+        "The checked-in inventory has zero unmapped captured pages/API roots/component types and all workstream dependencies form a DAG.",
+        "Unreviewed additions/removals or changed upstream source content are reported and fail the explicit online audit until reviewed deliberately.",
+        "A future maintainer can reproduce source collection and inspect exact mapping decisions without asking the user to enumerate missing features."
+      ]
+    }
+  ],
+  "page_workstreams": {
+    "https://discord.com/developers/home": [
+      "W34"
+    ],
+    "https://discord.com/invite/discord-developers": [
+      "W34"
+    ],
+    "https://discordpy.readthedocs.io/en/stable/api.html": [
+      "W04",
+      "W05",
+      "W19",
+      "W28"
+    ],
+    "https://discordpy.readthedocs.io/en/stable/ext/commands/api.html": [
+      "W06",
+      "W07",
+      "W08"
+    ],
+    "https://discordpy.readthedocs.io/en/stable/ext/commands/cogs.html": [
+      "W08"
+    ],
+    "https://discordpy.readthedocs.io/en/stable/ext/commands/commands.html": [
+      "W06",
+      "W11"
+    ],
+    "https://discordpy.readthedocs.io/en/stable/ext/commands/extensions.html": [
+      "W08"
+    ],
+    "https://discordpy.readthedocs.io/en/stable/ext/tasks/index.html": [
+      "W09"
+    ],
+    "https://discordpy.readthedocs.io/en/stable/intents.html": [
+      "W03",
+      "W05"
+    ],
+    "https://discordpy.readthedocs.io/en/stable/interactions/api.html": [
+      "W10",
+      "W11",
+      "W12",
+      "W13",
+      "W14"
+    ],
+    "https://discordpy.readthedocs.io/en/stable/version_guarantees.html": [
+      "W32",
+      "W33"
+    ],
+    "https://discordpy.readthedocs.io/en/stable/whats_new.html": [
+      "W35"
+    ],
+    "https://docs.discord.com/developers/activities/building-an-activity.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/activities/design-patterns.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/activities/development-guides.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/activities/development-guides/assets-and-metadata.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/activities/development-guides/growth-and-referrals.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/activities/development-guides/layout.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/activities/development-guides/local-development.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/activities/development-guides/mobile.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/activities/development-guides/multiplayer-experience.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/activities/development-guides/networking.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/activities/development-guides/production-readiness.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/activities/development-guides/user-actions.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/activities/how-activities-work.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/activities/overview.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/bots/overview.md": [
+      "W34"
+    ],
+    "https://docs.discord.com/developers/change-log.md": [
+      "W35"
+    ],
+    "https://docs.discord.com/developers/components/overview.md": [
+      "W12",
+      "W13",
+      "W14"
+    ],
+    "https://docs.discord.com/developers/components/reference.md": [
+      "W12",
+      "W13",
+      "W14"
+    ],
+    "https://docs.discord.com/developers/components/using-message-components.md": [
+      "W12",
+      "W13"
+    ],
+    "https://docs.discord.com/developers/components/using-modal-components.md": [
+      "W14"
+    ],
+    "https://docs.discord.com/developers/developer-tools/community-resources.md": [
+      "W34"
+    ],
+    "https://docs.discord.com/developers/developer-tools/embedded-app-sdk.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/core-concepts.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/core-concepts/communication-features.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/core-concepts/core-features.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/core-concepts/integration-overview.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/core-concepts/mobile.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/core-concepts/oauth2-scopes.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/core-concepts/platform-compatibility.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/core-concepts/release-cadence-and-support.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/design-guidelines/branding-guidelines.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/design-guidelines/chat-history.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/design-guidelines/connection-points.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/design-guidelines/consoles.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/design-guidelines/direct-messages.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/design-guidelines/game-friends.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/design-guidelines/linked-channels.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/design-guidelines/principles.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/design-guidelines/provisional-accounts.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/design-guidelines/signing-in.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/design-guidelines/social-settings.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/design-guidelines/status-rich-presence.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/design-guidelines/unified-friends-list.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/development-guides/account-linking-from-discord.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/development-guides/account-linking-on-consoles.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/development-guides/account-linking-on-mobile.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/development-guides/account-linking-on-web.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/development-guides/account-linking-with-discord.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/development-guides/creating-a-unified-friends-list.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/development-guides/linked-channels.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/development-guides/managing-game-invites.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/development-guides/managing-lobbies.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/development-guides/managing-relationships.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/development-guides/managing-voice-chat.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/development-guides/provisional-accounts/bot-token-endpoint.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/development-guides/provisional-accounts/external-credentials-exchange.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/development-guides/provisional-accounts/identity-providers.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/development-guides/provisional-accounts/managing-accounts.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/development-guides/provisional-accounts/merging-accounts.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/development-guides/provisional-accounts/overview.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/development-guides/provisional-accounts/public-client.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/development-guides/provisional-accounts/unmerging-accounts.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/development-guides/publisher-level-account-linking.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/development-guides/sending-direct-messages.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/development-guides/setting-rich-presence.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/development-guides/unlinking-accounts.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/getting-started.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/getting-started/using-c++.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/getting-started/using-unity.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/getting-started/using-unreal-engine.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/how-to.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/how-to/debug-log.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/how-to/handle-rate-limits.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/how-to/handle-special-characters-display-names.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/how-to/integrate-moderation.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/how-to/market-your-integration.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/how-to/use-with-discord-apis.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/how-to/voice-muting-for-blocked-players.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/overview.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discord-social-sdk/social-sdk-reference.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/discovery/best-practices.md": [
+      "W26",
+      "W34"
+    ],
+    "https://docs.discord.com/developers/discovery/enabling-discovery.md": [
+      "W26",
+      "W34"
+    ],
+    "https://docs.discord.com/developers/discovery/overview.md": [
+      "W26",
+      "W34"
+    ],
+    "https://docs.discord.com/developers/events/gateway-events.md": [
+      "W03",
+      "W05"
+    ],
+    "https://docs.discord.com/developers/events/gateway.md": [
+      "W03"
+    ],
+    "https://docs.discord.com/developers/events/overview.md": [
+      "W05"
+    ],
+    "https://docs.discord.com/developers/events/webhook-events.md": [
+      "W22",
+      "W27",
+      "W31"
+    ],
+    "https://docs.discord.com/developers/game-development/how-to-grow-your-game.md": [
+      "W31",
+      "W34"
+    ],
+    "https://docs.discord.com/developers/gateway/getting-started-with-privileged-intent-review.md": [
+      "W03",
+      "W33"
+    ],
+    "https://docs.discord.com/developers/gateway/you-might-not-need-a-privileged-intent.md": [
+      "W03",
+      "W05"
+    ],
+    "https://docs.discord.com/developers/guides.md": [
+      "W34"
+    ],
+    "https://docs.discord.com/developers/guides/activities.md": [
+      "W34"
+    ],
+    "https://docs.discord.com/developers/guides/bots.md": [
+      "W34"
+    ],
+    "https://docs.discord.com/developers/guides/communities.md": [
+      "W34"
+    ],
+    "https://docs.discord.com/developers/guides/game-development.md": [
+      "W34"
+    ],
+    "https://docs.discord.com/developers/guides/platform.md": [
+      "W34"
+    ],
+    "https://docs.discord.com/developers/guides/social-sdk.md": [
+      "W34"
+    ],
+    "https://docs.discord.com/developers/interactions/application-commands.md": [
+      "W11"
+    ],
+    "https://docs.discord.com/developers/interactions/overview.md": [
+      "W10"
+    ],
+    "https://docs.discord.com/developers/interactions/receiving-and-responding.md": [
+      "W10"
+    ],
+    "https://docs.discord.com/developers/intro.md": [
+      "W34"
+    ],
+    "https://docs.discord.com/developers/link-previews/component-embeds.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/link-previews/overview.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/monetization/enabling-monetization.md": [
+      "W27"
+    ],
+    "https://docs.discord.com/developers/monetization/implementing-app-subscriptions.md": [
+      "W27"
+    ],
+    "https://docs.discord.com/developers/monetization/implementing-iap-for-activities.md": [
+      "W27"
+    ],
+    "https://docs.discord.com/developers/monetization/implementing-one-time-purchases.md": [
+      "W27"
+    ],
+    "https://docs.discord.com/developers/monetization/managing-skus.md": [
+      "W27"
+    ],
+    "https://docs.discord.com/developers/monetization/overview.md": [
+      "W27"
+    ],
+    "https://docs.discord.com/developers/platform/account-linking.md": [
+      "W26",
+      "W31"
+    ],
+    "https://docs.discord.com/developers/platform/activities.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/platform/app-monetization.md": [
+      "W27"
+    ],
+    "https://docs.discord.com/developers/platform/bots.md": [
+      "W34"
+    ],
+    "https://docs.discord.com/developers/platform/claim-your-game.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/platform/community-servers.md": [
+      "W17"
+    ],
+    "https://docs.discord.com/developers/platform/components.md": [
+      "W12",
+      "W13",
+      "W14"
+    ],
+    "https://docs.discord.com/developers/platform/discovery.md": [
+      "W26",
+      "W34"
+    ],
+    "https://docs.discord.com/developers/platform/game-profiles.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/platform/interactions.md": [
+      "W10",
+      "W11"
+    ],
+    "https://docs.discord.com/developers/platform/oauth2-and-permissions.md": [
+      "W26",
+      "W15"
+    ],
+    "https://docs.discord.com/developers/platform/rich-presence.md": [
+      "W03",
+      "W31"
+    ],
+    "https://docs.discord.com/developers/platform/server-and-channel-management.md": [
+      "W17",
+      "W18"
+    ],
+    "https://docs.discord.com/developers/platform/social-layer.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/platform/webhooks.md": [
+      "W22"
+    ],
+    "https://docs.discord.com/developers/policies/developer-policy.md": [
+      "W33"
+    ],
+    "https://docs.discord.com/developers/policies/developer-terms-of-service.md": [
+      "W33"
+    ],
+    "https://docs.discord.com/developers/quick-start/getting-started.md": [
+      "W34"
+    ],
+    "https://docs.discord.com/developers/quick-start/overview-of-apps.md": [
+      "W34"
+    ],
+    "https://docs.discord.com/developers/reference.md": [
+      "W02",
+      "W04"
+    ],
+    "https://docs.discord.com/developers/resources/application-identity-profile.md": [
+      "W31",
+      "W26"
+    ],
+    "https://docs.discord.com/developers/resources/application-role-connection-metadata.md": [
+      "W26"
+    ],
+    "https://docs.discord.com/developers/resources/application.md": [
+      "W26"
+    ],
+    "https://docs.discord.com/developers/resources/audit-log.md": [
+      "W23"
+    ],
+    "https://docs.discord.com/developers/resources/auto-moderation.md": [
+      "W23"
+    ],
+    "https://docs.discord.com/developers/resources/channel.md": [
+      "W18",
+      "W15"
+    ],
+    "https://docs.discord.com/developers/resources/emoji.md": [
+      "W20"
+    ],
+    "https://docs.discord.com/developers/resources/entitlement.md": [
+      "W27"
+    ],
+    "https://docs.discord.com/developers/resources/guild-scheduled-event.md": [
+      "W24"
+    ],
+    "https://docs.discord.com/developers/resources/guild-template.md": [
+      "W17"
+    ],
+    "https://docs.discord.com/developers/resources/guild.md": [
+      "W17",
+      "W15",
+      "W16"
+    ],
+    "https://docs.discord.com/developers/resources/invite.md": [
+      "W17"
+    ],
+    "https://docs.discord.com/developers/resources/lobby.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/resources/message.md": [
+      "W19",
+      "W20"
+    ],
+    "https://docs.discord.com/developers/resources/poll.md": [
+      "W21"
+    ],
+    "https://docs.discord.com/developers/resources/sku.md": [
+      "W27"
+    ],
+    "https://docs.discord.com/developers/resources/soundboard.md": [
+      "W25"
+    ],
+    "https://docs.discord.com/developers/resources/stage-instance.md": [
+      "W24"
+    ],
+    "https://docs.discord.com/developers/resources/sticker.md": [
+      "W20"
+    ],
+    "https://docs.discord.com/developers/resources/subscription.md": [
+      "W27"
+    ],
+    "https://docs.discord.com/developers/resources/user.md": [
+      "W16",
+      "W26"
+    ],
+    "https://docs.discord.com/developers/resources/voice.md": [
+      "W28",
+      "W18"
+    ],
+    "https://docs.discord.com/developers/resources/webhook.md": [
+      "W22"
+    ],
+    "https://docs.discord.com/developers/rich-presence/using-with-the-embedded-app-sdk.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/social-commerce/overview.md": [
+      "W31",
+      "W27"
+    ],
+    "https://docs.discord.com/developers/social-layer/game-stats-widgets/best-practices.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/social-layer/game-stats-widgets/overview.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/social-layer/game-stats-widgets/sending-game-data.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/social-layer/game-stats-widgets/widget-configuration.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/topics/certified-devices.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/topics/oauth2.md": [
+      "W26"
+    ],
+    "https://docs.discord.com/developers/topics/opcodes-and-status-codes.md": [
+      "W03",
+      "W28"
+    ],
+    "https://docs.discord.com/developers/topics/permissions.md": [
+      "W15"
+    ],
+    "https://docs.discord.com/developers/topics/rate-limits.md": [
+      "W02"
+    ],
+    "https://docs.discord.com/developers/topics/rpc.md": [
+      "W31"
+    ],
+    "https://docs.discord.com/developers/topics/teams.md": [
+      "W26"
+    ],
+    "https://docs.discord.com/developers/topics/threads.md": [
+      "W18"
+    ],
+    "https://docs.discord.com/developers/topics/voice-connections.md": [
+      "W28"
+    ],
+    "https://docs.discord.com/developers/tutorials/configuring-app-metadata-for-linked-roles.md": [
+      "W26"
+    ],
+    "https://docs.discord.com/developers/tutorials/developing-a-user-installable-app.md": [
+      "W11",
+      "W26"
+    ],
+    "https://docs.discord.com/developers/tutorials/hosting-on-cloudflare-workers.md": [
+      "W10",
+      "W34"
+    ],
+    "https://docs.discord.com/developers/tutorials/using-community-invites.md": [
+      "W17",
+      "W34"
+    ],
+    "https://docs.discord.com/llms.txt": [
+      "W35"
+    ]
+  },
+  "python_roots": {
+    "discord.ActionRow": [
+      "W12"
+    ],
+    "discord.Activity": [
+      "W03",
+      "W04"
+    ],
+    "discord.ActivityType": [
+      "W03",
+      "W04"
+    ],
+    "discord.AllowedMentions": [
+      "W19"
+    ],
+    "discord.AppCommandOptionType": [
+      "W11"
+    ],
+    "discord.AppCommandPermissionType": [
+      "W11"
+    ],
+    "discord.AppCommandType": [
+      "W11"
+    ],
+    "discord.AppInfo": [
+      "W26"
+    ],
+    "discord.AppInstallParams": [
+      "W26"
+    ],
+    "discord.ApplicationFlags": [
+      "W26"
+    ],
+    "discord.Asset": [
+      "W04"
+    ],
+    "discord.Attachment": [
+      "W19"
+    ],
+    "discord.AttachmentFlags": [
+      "W04"
+    ],
+    "discord.AudioSource": [
+      "W28"
+    ],
+    "discord.AuditLogAction": [
+      "W23"
+    ],
+    "discord.AuditLogActionCategory": [
+      "W23"
+    ],
+    "discord.AuditLogChanges": [
+      "W23"
+    ],
+    "discord.AuditLogDiff": [
+      "W23"
+    ],
+    "discord.AuditLogEntry": [
+      "W23"
+    ],
+    "discord.AutoModAction": [
+      "W23"
+    ],
+    "discord.AutoModPresets": [
+      "W23"
+    ],
+    "discord.AutoModRule": [
+      "W23"
+    ],
+    "discord.AutoModRuleAction": [
+      "W23"
+    ],
+    "discord.AutoModRuleActionType": [
+      "W23"
+    ],
+    "discord.AutoModRuleEventType": [
+      "W23"
+    ],
+    "discord.AutoModRuleTriggerType": [
+      "W23"
+    ],
+    "discord.AutoModTrigger": [
+      "W23"
+    ],
+    "discord.AutoShardedClient": [
+      "W29"
+    ],
+    "discord.BanEntry": [
+      "W16"
+    ],
+    "discord.BaseActivity": [
+      "W03",
+      "W04"
+    ],
+    "discord.BaseSoundboardSound": [
+      "W25"
+    ],
+    "discord.BotIntegration": [
+      "W17"
+    ],
+    "discord.BulkBanResult": [
+      "W16"
+    ],
+    "discord.Button": [
+      "W12"
+    ],
+    "discord.ButtonStyle": [
+      "W12"
+    ],
+    "discord.CallMessage": [
+      "W19"
+    ],
+    "discord.CategoryChannel": [
+      "W18",
+      "W15"
+    ],
+    "discord.ChannelFlags": [
+      "W18",
+      "W15"
+    ],
+    "discord.ChannelType": [
+      "W18",
+      "W15"
+    ],
+    "discord.CheckboxComponent": [
+      "W14"
+    ],
+    "discord.CheckboxGroupComponent": [
+      "W14"
+    ],
+    "discord.CheckboxGroupOption": [
+      "W14"
+    ],
+    "discord.Client": [
+      "W01",
+      "W02",
+      "W03",
+      "W16",
+      "W17",
+      "W19",
+      "W26",
+      "W27"
+    ],
+    "discord.ClientException": [
+      "W01"
+    ],
+    "discord.ClientStatus": [
+      "W03",
+      "W04"
+    ],
+    "discord.ClientUser": [
+      "W16",
+      "W04"
+    ],
+    "discord.Collectible": [
+      "W04"
+    ],
+    "discord.CollectibleType": [
+      "W04"
+    ],
+    "discord.Colour": [
+      "W04"
+    ],
+    "discord.Component": [
+      "W12"
+    ],
+    "discord.ComponentType": [
+      "W12"
+    ],
+    "discord.ConnectionClosed": [
+      "W01",
+      "W03"
+    ],
+    "discord.Container": [
+      "W13"
+    ],
+    "discord.ContentFilter": [
+      "W17"
+    ],
+    "discord.CustomActivity": [
+      "W03",
+      "W04"
+    ],
+    "discord.DMChannel": [
+      "W18",
+      "W15"
+    ],
+    "discord.DefaultAvatar": [
+      "W04"
+    ],
+    "discord.DeletedReferencedMessage": [
+      "W19"
+    ],
+    "discord.DiscordException": [
+      "W01"
+    ],
+    "discord.DiscordServerError": [
+      "W01"
+    ],
+    "discord.Embed": [
+      "W19"
+    ],
+    "discord.EmbedFlags": [
+      "W19"
+    ],
+    "discord.Emoji": [
+      "W20"
+    ],
+    "discord.Entitlement": [
+      "W27"
+    ],
+    "discord.EntitlementOwnerType": [
+      "W27"
+    ],
+    "discord.EntitlementType": [
+      "W27"
+    ],
+    "discord.EntityType": [
+      "W04"
+    ],
+    "discord.EventStatus": [
+      "W24"
+    ],
+    "discord.ExpireBehaviour": [
+      "W17"
+    ],
+    "discord.FFmpegAudio": [
+      "W28"
+    ],
+    "discord.FFmpegOpusAudio": [
+      "W28"
+    ],
+    "discord.FFmpegPCMAudio": [
+      "W28"
+    ],
+    "discord.FFmpegProcessError": [
+      "W28"
+    ],
+    "discord.File": [
+      "W19"
+    ],
+    "discord.FileComponent": [
+      "W13"
+    ],
+    "discord.FileUploadComponent": [
+      "W14"
+    ],
+    "discord.Forbidden": [
+      "W01"
+    ],
+    "discord.ForumChannel": [
+      "W18",
+      "W15"
+    ],
+    "discord.ForumLayoutType": [
+      "W18",
+      "W15"
+    ],
+    "discord.ForumOrderType": [
+      "W18",
+      "W15"
+    ],
+    "discord.ForumTag": [
+      "W18",
+      "W15"
+    ],
+    "discord.Game": [
+      "W03",
+      "W04"
+    ],
+    "discord.GatewayNotFound": [
+      "W01",
+      "W03"
+    ],
+    "discord.GroupChannel": [
+      "W18",
+      "W15"
+    ],
+    "discord.Guild": [
+      "W17"
+    ],
+    "discord.GuildPreview": [
+      "W17"
+    ],
+    "discord.GuildProductPurchase": [
+      "W27"
+    ],
+    "discord.GuildSticker": [
+      "W20"
+    ],
+    "discord.HTTPException": [
+      "W01"
+    ],
+    "discord.Integration": [
+      "W17"
+    ],
+    "discord.IntegrationAccount": [
+      "W17"
+    ],
+    "discord.IntegrationApplication": [
+      "W17"
+    ],
+    "discord.IntegrationTypeConfig": [
+      "W26"
+    ],
+    "discord.Intents": [
+      "W03",
+      "W04"
+    ],
+    "discord.Interaction": [
+      "W10"
+    ],
+    "discord.InteractionCallbackActivityInstance": [
+      "W10"
+    ],
+    "discord.InteractionCallbackResponse": [
+      "W10"
+    ],
+    "discord.InteractionMessage": [
+      "W10"
+    ],
+    "discord.InteractionResponded": [
+      "W10"
+    ],
+    "discord.InteractionResponse": [
+      "W10"
+    ],
+    "discord.InteractionResponseType": [
+      "W10"
+    ],
+    "discord.InteractionType": [
+      "W10"
+    ],
+    "discord.InvalidData": [
+      "W01",
+      "W03"
+    ],
+    "discord.Invite": [
+      "W17"
+    ],
+    "discord.InviteFlags": [
+      "W17"
+    ],
+    "discord.InviteTarget": [
+      "W17"
+    ],
+    "discord.InviteType": [
+      "W17"
+    ],
+    "discord.LabelComponent": [
+      "W14"
+    ],
+    "discord.Locale": [
+      "W04"
+    ],
+    "discord.LoginFailure": [
+      "W01"
+    ],
+    "discord.MFALevel": [
+      "W17"
+    ],
+    "discord.MediaGalleryComponent": [
+      "W13"
+    ],
+    "discord.MediaGalleryItem": [
+      "W13"
+    ],
+    "discord.MediaItemLoadingState": [
+      "W04"
+    ],
+    "discord.Member": [
+      "W16",
+      "W04"
+    ],
+    "discord.MemberCacheFlags": [
+      "W16",
+      "W04"
+    ],
+    "discord.MemberFlags": [
+      "W16",
+      "W04"
+    ],
+    "discord.Message": [
+      "W19"
+    ],
+    "discord.MessageApplication": [
+      "W19"
+    ],
+    "discord.MessageFlags": [
+      "W19"
+    ],
+    "discord.MessageInteraction": [
+      "W10"
+    ],
+    "discord.MessageInteractionMetadata": [
+      "W10"
+    ],
+    "discord.MessageReference": [
+      "W19"
+    ],
+    "discord.MessageReferenceType": [
+      "W19"
+    ],
+    "discord.MessageSnapshot": [
+      "W19"
+    ],
+    "discord.MessageType": [
+      "W19"
+    ],
+    "discord.MissingApplicationID": [
+      "W01"
+    ],
+    "discord.NSFWLevel": [
+      "W17"
+    ],
+    "discord.NameplatePalette": [
+      "W04"
+    ],
+    "discord.NotFound": [
+      "W01"
+    ],
+    "discord.NotificationLevel": [
+      "W17"
+    ],
+    "discord.Object": [
+      "W04"
+    ],
+    "discord.Onboarding": [
+      "W17"
+    ],
+    "discord.OnboardingMode": [
+      "W17"
+    ],
+    "discord.OnboardingPrompt": [
+      "W17"
+    ],
+    "discord.OnboardingPromptOption": [
+      "W17"
+    ],
+    "discord.OnboardingPromptType": [
+      "W17"
+    ],
+    "discord.PCMAudio": [
+      "W28"
+    ],
+    "discord.PCMVolumeTransformer": [
+      "W28"
+    ],
+    "discord.PartialAppInfo": [
+      "W26"
+    ],
+    "discord.PartialEmoji": [
+      "W20"
+    ],
+    "discord.PartialIntegration": [
+      "W17"
+    ],
+    "discord.PartialInviteChannel": [
+      "W17"
+    ],
+    "discord.PartialInviteGuild": [
+      "W17"
+    ],
+    "discord.PartialMessage": [
+      "W19"
+    ],
+    "discord.PartialMessageable": [
+      "W18",
+      "W15"
+    ],
+    "discord.PartialWebhookChannel": [
+      "W22"
+    ],
+    "discord.PartialWebhookGuild": [
+      "W22"
+    ],
+    "discord.PermissionOverwrite": [
+      "W15"
+    ],
+    "discord.Permissions": [
+      "W15"
+    ],
+    "discord.Poll": [
+      "W21"
+    ],
+    "discord.PollAnswer": [
+      "W21"
+    ],
+    "discord.PollLayoutType": [
+      "W21"
+    ],
+    "discord.PollMedia": [
+      "W21"
+    ],
+    "discord.PrimaryGuild": [
+      "W16",
+      "W04"
+    ],
+    "discord.PrivacyLevel": [
+      "W24"
+    ],
+    "discord.PrivilegedIntentsRequired": [
+      "W01",
+      "W03"
+    ],
+    "discord.PublicUserFlags": [
+      "W16",
+      "W04"
+    ],
+    "discord.PurchaseNotification": [
+      "W27"
+    ],
+    "discord.RadioGroupComponent": [
+      "W14"
+    ],
+    "discord.RadioGroupOption": [
+      "W14"
+    ],
+    "discord.RateLimited": [
+      "W01"
+    ],
+    "discord.RawAppCommandPermissionsUpdateEvent": [
+      "W05"
+    ],
+    "discord.RawBulkMessageDeleteEvent": [
+      "W05"
+    ],
+    "discord.RawIntegrationDeleteEvent": [
+      "W05"
+    ],
+    "discord.RawMemberRemoveEvent": [
+      "W05"
+    ],
+    "discord.RawMessageDeleteEvent": [
+      "W05"
+    ],
+    "discord.RawMessageUpdateEvent": [
+      "W05"
+    ],
+    "discord.RawPollVoteActionEvent": [
+      "W05"
+    ],
+    "discord.RawPresenceUpdateEvent": [
+      "W05"
+    ],
+    "discord.RawReactionActionEvent": [
+      "W05"
+    ],
+    "discord.RawReactionClearEmojiEvent": [
+      "W05"
+    ],
+    "discord.RawReactionClearEvent": [
+      "W05"
+    ],
+    "discord.RawThreadDeleteEvent": [
+      "W05"
+    ],
+    "discord.RawThreadMembersUpdate": [
+      "W05"
+    ],
+    "discord.RawThreadUpdateEvent": [
+      "W05"
+    ],
+    "discord.RawTypingEvent": [
+      "W05"
+    ],
+    "discord.Reaction": [
+      "W20"
+    ],
+    "discord.ReactionType": [
+      "W20"
+    ],
+    "discord.ResolvedInvite": [
+      "W17"
+    ],
+    "discord.Role": [
+      "W15"
+    ],
+    "discord.RoleFlags": [
+      "W15"
+    ],
+    "discord.RoleSubscriptionInfo": [
+      "W27"
+    ],
+    "discord.RoleTags": [
+      "W15"
+    ],
+    "discord.SKU": [
+      "W27"
+    ],
+    "discord.SKUFlags": [
+      "W27"
+    ],
+    "discord.SKUType": [
+      "W27"
+    ],
+    "discord.ScheduledEvent": [
+      "W24"
+    ],
+    "discord.SectionComponent": [
+      "W13"
+    ],
+    "discord.SelectDefaultValue": [
+      "W12"
+    ],
+    "discord.SelectDefaultValueType": [
+      "W04"
+    ],
+    "discord.SelectMenu": [
+      "W12"
+    ],
+    "discord.SelectOption": [
+      "W12"
+    ],
+    "discord.SeparatorComponent": [
+      "W13"
+    ],
+    "discord.SeparatorSpacing": [
+      "W13"
+    ],
+    "discord.SessionStartLimits": [
+      "W29"
+    ],
+    "discord.ShardInfo": [
+      "W29"
+    ],
+    "discord.SoundboardDefaultSound": [
+      "W25"
+    ],
+    "discord.SoundboardSound": [
+      "W25"
+    ],
+    "discord.Spotify": [
+      "W03",
+      "W04"
+    ],
+    "discord.StageChannel": [
+      "W18",
+      "W15"
+    ],
+    "discord.StageInstance": [
+      "W24"
+    ],
+    "discord.StandardSticker": [
+      "W20"
+    ],
+    "discord.Status": [
+      "W03",
+      "W04"
+    ],
+    "discord.StatusDisplayType": [
+      "W03",
+      "W04"
+    ],
+    "discord.Sticker": [
+      "W20"
+    ],
+    "discord.StickerFormatType": [
+      "W20"
+    ],
+    "discord.StickerItem": [
+      "W20"
+    ],
+    "discord.StickerPack": [
+      "W20"
+    ],
+    "discord.StickerType": [
+      "W20"
+    ],
+    "discord.StreamIntegration": [
+      "W17"
+    ],
+    "discord.Streaming": [
+      "W03",
+      "W04"
+    ],
+    "discord.Subscription": [
+      "W27"
+    ],
+    "discord.SubscriptionStatus": [
+      "W27"
+    ],
+    "discord.SyncWebhook": [
+      "W22"
+    ],
+    "discord.SyncWebhookMessage": [
+      "W22"
+    ],
+    "discord.SystemChannelFlags": [
+      "W17"
+    ],
+    "discord.Team": [
+      "W26"
+    ],
+    "discord.TeamMember": [
+      "W26"
+    ],
+    "discord.TeamMemberRole": [
+      "W26"
+    ],
+    "discord.TeamMembershipState": [
+      "W26"
+    ],
+    "discord.Template": [
+      "W17"
+    ],
+    "discord.TextChannel": [
+      "W18",
+      "W15"
+    ],
+    "discord.TextDisplay": [
+      "W13"
+    ],
+    "discord.TextInput": [
+      "W14"
+    ],
+    "discord.TextStyle": [
+      "W14"
+    ],
+    "discord.Thread": [
+      "W18",
+      "W15"
+    ],
+    "discord.ThreadMember": [
+      "W18",
+      "W15"
+    ],
+    "discord.ThumbnailComponent": [
+      "W13"
+    ],
+    "discord.UnfurledMediaItem": [
+      "W13"
+    ],
+    "discord.User": [
+      "W16",
+      "W04"
+    ],
+    "discord.UserFlags": [
+      "W04"
+    ],
+    "discord.VerificationLevel": [
+      "W17"
+    ],
+    "discord.VideoQualityMode": [
+      "W18",
+      "W15"
+    ],
+    "discord.VoiceChannel": [
+      "W18",
+      "W15"
+    ],
+    "discord.VoiceChannelEffect": [
+      "W25"
+    ],
+    "discord.VoiceChannelEffectAnimation": [
+      "W25"
+    ],
+    "discord.VoiceChannelEffectAnimationType": [
+      "W25"
+    ],
+    "discord.VoiceChannelSoundEffect": [
+      "W25"
+    ],
+    "discord.VoiceClient": [
+      "W28"
+    ],
+    "discord.VoiceProtocol": [
+      "W28"
+    ],
+    "discord.VoiceState": [
+      "W28"
+    ],
+    "discord.Webhook": [
+      "W22"
+    ],
+    "discord.WebhookMessage": [
+      "W22"
+    ],
+    "discord.WebhookType": [
+      "W22"
+    ],
+    "discord.WelcomeChannel": [
+      "W17"
+    ],
+    "discord.WelcomeScreen": [
+      "W17"
+    ],
+    "discord.Widget": [
+      "W17"
+    ],
+    "discord.WidgetChannel": [
+      "W17"
+    ],
+    "discord.WidgetMember": [
+      "W17"
+    ],
+    "discord.__version__": [
+      "W32"
+    ],
+    "discord.abc.Connectable": [
+      "W28"
+    ],
+    "discord.abc.GuildChannel": [
+      "W18",
+      "W15"
+    ],
+    "discord.abc.Messageable": [
+      "W19"
+    ],
+    "discord.abc.PrivateChannel": [
+      "W18"
+    ],
+    "discord.abc.Snowflake": [
+      "W04"
+    ],
+    "discord.abc.User": [
+      "W16"
+    ],
+    "discord.app_commands.AllChannels": [
+      "W11"
+    ],
+    "discord.app_commands.AppCommand": [
+      "W11"
+    ],
+    "discord.app_commands.AppCommandChannel": [
+      "W11"
+    ],
+    "discord.app_commands.AppCommandContext": [
+      "W11"
+    ],
+    "discord.app_commands.AppCommandError": [
+      "W11"
+    ],
+    "discord.app_commands.AppCommandGroup": [
+      "W11"
+    ],
+    "discord.app_commands.AppCommandPermissions": [
+      "W11"
+    ],
+    "discord.app_commands.AppCommandThread": [
+      "W11"
+    ],
+    "discord.app_commands.AppInstallationType": [
+      "W11"
+    ],
+    "discord.app_commands.Argument": [
+      "W11"
+    ],
+    "discord.app_commands.BotMissingPermissions": [
+      "W11"
+    ],
+    "discord.app_commands.CheckFailure": [
+      "W11"
+    ],
+    "discord.app_commands.Choice": [
+      "W11"
+    ],
+    "discord.app_commands.Command": [
+      "W11"
+    ],
+    "discord.app_commands.CommandAlreadyRegistered": [
+      "W11"
+    ],
+    "discord.app_commands.CommandInvokeError": [
+      "W11"
+    ],
+    "discord.app_commands.CommandLimitReached": [
+      "W11"
+    ],
+    "discord.app_commands.CommandNotFound": [
+      "W11"
+    ],
+    "discord.app_commands.CommandOnCooldown": [
+      "W11"
+    ],
+    "discord.app_commands.CommandSignatureMismatch": [
+      "W11"
+    ],
+    "discord.app_commands.CommandSyncFailure": [
+      "W11"
+    ],
+    "discord.app_commands.CommandTree": [
+      "W11"
+    ],
+    "discord.app_commands.ContextMenu": [
+      "W11"
+    ],
+    "discord.app_commands.Cooldown": [
+      "W11"
+    ],
+    "discord.app_commands.Group": [
+      "W11"
+    ],
+    "discord.app_commands.GuildAppCommandPermissions": [
+      "W11"
+    ],
+    "discord.app_commands.MissingAnyRole": [
+      "W11"
+    ],
+    "discord.app_commands.MissingPermissions": [
+      "W11"
+    ],
+    "discord.app_commands.MissingRole": [
+      "W11"
+    ],
+    "discord.app_commands.Namespace": [
+      "W11"
+    ],
+    "discord.app_commands.NoPrivateMessage": [
+      "W11"
+    ],
+    "discord.app_commands.Parameter": [
+      "W11"
+    ],
+    "discord.app_commands.Range": [
+      "W11"
+    ],
+    "discord.app_commands.Timestamp": [
+      "W11"
+    ],
+    "discord.app_commands.Transform": [
+      "W11"
+    ],
+    "discord.app_commands.Transformer": [
+      "W11"
+    ],
+    "discord.app_commands.TransformerError": [
+      "W11"
+    ],
+    "discord.app_commands.TranslationContext": [
+      "W11"
+    ],
+    "discord.app_commands.TranslationContextLocation": [
+      "W11"
+    ],
+    "discord.app_commands.TranslationError": [
+      "W11"
+    ],
+    "discord.app_commands.Translator": [
+      "W11"
+    ],
+    "discord.app_commands.allowed_contexts": [
+      "W11"
+    ],
+    "discord.app_commands.allowed_installs": [
+      "W11"
+    ],
+    "discord.app_commands.autocomplete": [
+      "W11"
+    ],
+    "discord.app_commands.check": [
+      "W11"
+    ],
+    "discord.app_commands.checks": [
+      "W11"
+    ],
+    "discord.app_commands.choices": [
+      "W11"
+    ],
+    "discord.app_commands.command": [
+      "W11"
+    ],
+    "discord.app_commands.context_menu": [
+      "W11"
+    ],
+    "discord.app_commands.default_permissions": [
+      "W11"
+    ],
+    "discord.app_commands.describe": [
+      "W11"
+    ],
+    "discord.app_commands.dm_only": [
+      "W11"
+    ],
+    "discord.app_commands.guild_install": [
+      "W11"
+    ],
+    "discord.app_commands.guild_only": [
+      "W11"
+    ],
+    "discord.app_commands.guilds": [
+      "W11"
+    ],
+    "discord.app_commands.locale_str": [
+      "W11"
+    ],
+    "discord.app_commands.private_channel_only": [
+      "W11"
+    ],
+    "discord.app_commands.rename": [
+      "W11"
+    ],
+    "discord.app_commands.user_install": [
+      "W11"
+    ],
+    "discord.ext.commands.ArgumentParsingError": [
+      "W06"
+    ],
+    "discord.ext.commands.Author": [
+      "W06"
+    ],
+    "discord.ext.commands.AutoShardedBot": [
+      "W29",
+      "W06"
+    ],
+    "discord.ext.commands.BadArgument": [
+      "W06"
+    ],
+    "discord.ext.commands.BadBoolArgument": [
+      "W06"
+    ],
+    "discord.ext.commands.BadColourArgument": [
+      "W06"
+    ],
+    "discord.ext.commands.BadFlagArgument": [
+      "W06"
+    ],
+    "discord.ext.commands.BadInviteArgument": [
+      "W06"
+    ],
+    "discord.ext.commands.BadLiteralArgument": [
+      "W06"
+    ],
+    "discord.ext.commands.BadUnionArgument": [
+      "W06"
+    ],
+    "discord.ext.commands.Bot": [
+      "W06"
+    ],
+    "discord.ext.commands.BotMissingAnyRole": [
+      "W06"
+    ],
+    "discord.ext.commands.BotMissingPermissions": [
+      "W06"
+    ],
+    "discord.ext.commands.BotMissingRole": [
+      "W06"
+    ],
+    "discord.ext.commands.BucketType": [
+      "W06"
+    ],
+    "discord.ext.commands.CategoryChannelConverter": [
+      "W06"
+    ],
+    "discord.ext.commands.ChannelNotFound": [
+      "W06"
+    ],
+    "discord.ext.commands.ChannelNotReadable": [
+      "W06"
+    ],
+    "discord.ext.commands.CheckAnyFailure": [
+      "W06"
+    ],
+    "discord.ext.commands.CheckFailure": [
+      "W06"
+    ],
+    "discord.ext.commands.Cog": [
+      "W08"
+    ],
+    "discord.ext.commands.CogMeta": [
+      "W08"
+    ],
+    "discord.ext.commands.ColourConverter": [
+      "W06"
+    ],
+    "discord.ext.commands.Command": [
+      "W06"
+    ],
+    "discord.ext.commands.CommandError": [
+      "W06"
+    ],
+    "discord.ext.commands.CommandInvokeError": [
+      "W06"
+    ],
+    "discord.ext.commands.CommandNotFound": [
+      "W06"
+    ],
+    "discord.ext.commands.CommandOnCooldown": [
+      "W06"
+    ],
+    "discord.ext.commands.CommandRegistrationError": [
+      "W06"
+    ],
+    "discord.ext.commands.Context": [
+      "W06"
+    ],
+    "discord.ext.commands.ConversionError": [
+      "W06"
+    ],
+    "discord.ext.commands.Converter": [
+      "W06"
+    ],
+    "discord.ext.commands.CurrentChannel": [
+      "W06"
+    ],
+    "discord.ext.commands.CurrentGuild": [
+      "W06"
+    ],
+    "discord.ext.commands.DefaultHelpCommand": [
+      "W07"
+    ],
+    "discord.ext.commands.DisabledCommand": [
+      "W06"
+    ],
+    "discord.ext.commands.EmojiConverter": [
+      "W06"
+    ],
+    "discord.ext.commands.EmojiNotFound": [
+      "W06"
+    ],
+    "discord.ext.commands.ExpectedClosingQuoteError": [
+      "W06"
+    ],
+    "discord.ext.commands.ExtensionAlreadyLoaded": [
+      "W08"
+    ],
+    "discord.ext.commands.ExtensionError": [
+      "W08"
+    ],
+    "discord.ext.commands.ExtensionFailed": [
+      "W08"
+    ],
+    "discord.ext.commands.ExtensionNotFound": [
+      "W08"
+    ],
+    "discord.ext.commands.ExtensionNotLoaded": [
+      "W08"
+    ],
+    "discord.ext.commands.Flag": [
+      "W06"
+    ],
+    "discord.ext.commands.FlagConverter": [
+      "W06"
+    ],
+    "discord.ext.commands.FlagError": [
+      "W06"
+    ],
+    "discord.ext.commands.ForumChannelConverter": [
+      "W06"
+    ],
+    "discord.ext.commands.GameConverter": [
+      "W06"
+    ],
+    "discord.ext.commands.Greedy": [
+      "W06"
+    ],
+    "discord.ext.commands.Group": [
+      "W06"
+    ],
+    "discord.ext.commands.GroupCog": [
+      "W08"
+    ],
+    "discord.ext.commands.GroupMixin": [
+      "W06"
+    ],
+    "discord.ext.commands.GuildChannelConverter": [
+      "W06"
+    ],
+    "discord.ext.commands.GuildConverter": [
+      "W06"
+    ],
+    "discord.ext.commands.GuildNotFound": [
+      "W06"
+    ],
+    "discord.ext.commands.GuildStickerConverter": [
+      "W06"
+    ],
+    "discord.ext.commands.GuildStickerNotFound": [
+      "W06"
+    ],
+    "discord.ext.commands.HelpCommand": [
+      "W07"
+    ],
+    "discord.ext.commands.HybridCommand": [
+      "W06",
+      "W11"
+    ],
+    "discord.ext.commands.HybridCommandError": [
+      "W06",
+      "W11"
+    ],
+    "discord.ext.commands.HybridGroup": [
+      "W06",
+      "W11"
+    ],
+    "discord.ext.commands.InvalidEndOfQuotedStringError": [
+      "W06"
+    ],
+    "discord.ext.commands.InviteConverter": [
+      "W06"
+    ],
+    "discord.ext.commands.MaxConcurrencyReached": [
+      "W06"
+    ],
+    "discord.ext.commands.MemberConverter": [
+      "W06"
+    ],
+    "discord.ext.commands.MemberNotFound": [
+      "W06"
+    ],
+    "discord.ext.commands.MessageConverter": [
+      "W06"
+    ],
+    "discord.ext.commands.MessageNotFound": [
+      "W06"
+    ],
+    "discord.ext.commands.MinimalHelpCommand": [
+      "W07"
+    ],
+    "discord.ext.commands.MissingAnyRole": [
+      "W06"
+    ],
+    "discord.ext.commands.MissingFlagArgument": [
+      "W06"
+    ],
+    "discord.ext.commands.MissingPermissions": [
+      "W06"
+    ],
+    "discord.ext.commands.MissingRequiredArgument": [
+      "W06"
+    ],
+    "discord.ext.commands.MissingRequiredAttachment": [
+      "W06"
+    ],
+    "discord.ext.commands.MissingRequiredFlag": [
+      "W06"
+    ],
+    "discord.ext.commands.MissingRole": [
+      "W06"
+    ],
+    "discord.ext.commands.NSFWChannelRequired": [
+      "W06"
+    ],
+    "discord.ext.commands.NoEntryPointError": [
+      "W08"
+    ],
+    "discord.ext.commands.NoPrivateMessage": [
+      "W06"
+    ],
+    "discord.ext.commands.NotOwner": [
+      "W06"
+    ],
+    "discord.ext.commands.ObjectConverter": [
+      "W06"
+    ],
+    "discord.ext.commands.Paginator": [
+      "W07"
+    ],
+    "discord.ext.commands.Parameter": [
+      "W06"
+    ],
+    "discord.ext.commands.PartialEmojiConversionFailure": [
+      "W06"
+    ],
+    "discord.ext.commands.PartialEmojiConverter": [
+      "W06"
+    ],
+    "discord.ext.commands.PartialMessageConverter": [
+      "W06"
+    ],
+    "discord.ext.commands.PrivateMessageOnly": [
+      "W06"
+    ],
+    "discord.ext.commands.Range": [
+      "W06"
+    ],
+    "discord.ext.commands.RangeError": [
+      "W06"
+    ],
+    "discord.ext.commands.RoleConverter": [
+      "W06"
+    ],
+    "discord.ext.commands.RoleNotFound": [
+      "W06"
+    ],
+    "discord.ext.commands.ScheduledEventConverter": [
+      "W06"
+    ],
+    "discord.ext.commands.ScheduledEventNotFound": [
+      "W06"
+    ],
+    "discord.ext.commands.SoundboardSoundConverter": [
+      "W06"
+    ],
+    "discord.ext.commands.SoundboardSoundNotFound": [
+      "W06"
+    ],
+    "discord.ext.commands.StageChannelConverter": [
+      "W06"
+    ],
+    "discord.ext.commands.TextChannelConverter": [
+      "W06"
+    ],
+    "discord.ext.commands.ThreadConverter": [
+      "W06"
+    ],
+    "discord.ext.commands.ThreadNotFound": [
+      "W06"
+    ],
+    "discord.ext.commands.Timestamp": [
+      "W06"
+    ],
+    "discord.ext.commands.TooManyArguments": [
+      "W06"
+    ],
+    "discord.ext.commands.TooManyFlags": [
+      "W06"
+    ],
+    "discord.ext.commands.UnexpectedQuoteError": [
+      "W06"
+    ],
+    "discord.ext.commands.UserConverter": [
+      "W06"
+    ],
+    "discord.ext.commands.UserInputError": [
+      "W06"
+    ],
+    "discord.ext.commands.UserNotFound": [
+      "W06"
+    ],
+    "discord.ext.commands.VoiceChannelConverter": [
+      "W06"
+    ],
+    "discord.ext.commands.after_invoke": [
+      "W06"
+    ],
+    "discord.ext.commands.before_invoke": [
+      "W06"
+    ],
+    "discord.ext.commands.bot_has_any_role": [
+      "W06"
+    ],
+    "discord.ext.commands.bot_has_guild_permissions": [
+      "W06"
+    ],
+    "discord.ext.commands.bot_has_permissions": [
+      "W06"
+    ],
+    "discord.ext.commands.bot_has_role": [
+      "W06"
+    ],
+    "discord.ext.commands.check": [
+      "W06"
+    ],
+    "discord.ext.commands.check_any": [
+      "W06"
+    ],
+    "discord.ext.commands.clean_content": [
+      "W06"
+    ],
+    "discord.ext.commands.command": [
+      "W06"
+    ],
+    "discord.ext.commands.cooldown": [
+      "W06"
+    ],
+    "discord.ext.commands.dm_only": [
+      "W06"
+    ],
+    "discord.ext.commands.dynamic_cooldown": [
+      "W06"
+    ],
+    "discord.ext.commands.flag": [
+      "W06"
+    ],
+    "discord.ext.commands.group": [
+      "W06"
+    ],
+    "discord.ext.commands.guild_only": [
+      "W06"
+    ],
+    "discord.ext.commands.has_any_role": [
+      "W06"
+    ],
+    "discord.ext.commands.has_guild_permissions": [
+      "W06"
+    ],
+    "discord.ext.commands.has_permissions": [
+      "W06"
+    ],
+    "discord.ext.commands.has_role": [
+      "W06"
+    ],
+    "discord.ext.commands.hybrid_command": [
+      "W06",
+      "W11"
+    ],
+    "discord.ext.commands.hybrid_group": [
+      "W06",
+      "W11"
+    ],
+    "discord.ext.commands.is_nsfw": [
+      "W06"
+    ],
+    "discord.ext.commands.is_owner": [
+      "W06"
+    ],
+    "discord.ext.commands.max_concurrency": [
+      "W06"
+    ],
+    "discord.ext.commands.on_command": [
+      "W06"
+    ],
+    "discord.ext.commands.on_command_completion": [
+      "W06"
+    ],
+    "discord.ext.commands.on_command_error": [
+      "W06"
+    ],
+    "discord.ext.commands.param": [
+      "W06"
+    ],
+    "discord.ext.commands.parameter": [
+      "W06"
+    ],
+    "discord.ext.commands.run_converters": [
+      "W06"
+    ],
+    "discord.ext.commands.when_mentioned": [
+      "W06"
+    ],
+    "discord.ext.commands.when_mentioned_or": [
+      "W06"
+    ],
+    "discord.ext.tasks.Loop": [
+      "W09"
+    ],
+    "discord.ext.tasks.loop": [
+      "W09"
+    ],
+    "discord.on_app_command_completion": [
+      "W05"
+    ],
+    "discord.on_audit_log_entry_create": [
+      "W05"
+    ],
+    "discord.on_automod_action": [
+      "W05"
+    ],
+    "discord.on_automod_rule_create": [
+      "W05"
+    ],
+    "discord.on_automod_rule_delete": [
+      "W05"
+    ],
+    "discord.on_automod_rule_update": [
+      "W05"
+    ],
+    "discord.on_bulk_message_delete": [
+      "W05"
+    ],
+    "discord.on_connect": [
+      "W05"
+    ],
+    "discord.on_disconnect": [
+      "W05"
+    ],
+    "discord.on_entitlement_create": [
+      "W05"
+    ],
+    "discord.on_entitlement_delete": [
+      "W05"
+    ],
+    "discord.on_entitlement_update": [
+      "W05"
+    ],
+    "discord.on_error": [
+      "W05"
+    ],
+    "discord.on_guild_available": [
+      "W05"
+    ],
+    "discord.on_guild_channel_create": [
+      "W05"
+    ],
+    "discord.on_guild_channel_delete": [
+      "W05"
+    ],
+    "discord.on_guild_channel_pins_update": [
+      "W05"
+    ],
+    "discord.on_guild_channel_update": [
+      "W05"
+    ],
+    "discord.on_guild_emojis_update": [
+      "W05"
+    ],
+    "discord.on_guild_integrations_update": [
+      "W05"
+    ],
+    "discord.on_guild_join": [
+      "W05"
+    ],
+    "discord.on_guild_remove": [
+      "W05"
+    ],
+    "discord.on_guild_role_create": [
+      "W05"
+    ],
+    "discord.on_guild_role_delete": [
+      "W05"
+    ],
+    "discord.on_guild_role_update": [
+      "W05"
+    ],
+    "discord.on_guild_stickers_update": [
+      "W05"
+    ],
+    "discord.on_guild_unavailable": [
+      "W05"
+    ],
+    "discord.on_guild_update": [
+      "W05"
+    ],
+    "discord.on_integration_create": [
+      "W05"
+    ],
+    "discord.on_integration_update": [
+      "W05"
+    ],
+    "discord.on_interaction": [
+      "W05"
+    ],
+    "discord.on_invite_create": [
+      "W05"
+    ],
+    "discord.on_invite_delete": [
+      "W05"
+    ],
+    "discord.on_member_ban": [
+      "W05"
+    ],
+    "discord.on_member_join": [
+      "W05"
+    ],
+    "discord.on_member_remove": [
+      "W05"
+    ],
+    "discord.on_member_unban": [
+      "W05"
+    ],
+    "discord.on_member_update": [
+      "W05"
+    ],
+    "discord.on_message": [
+      "W05"
+    ],
+    "discord.on_message_delete": [
+      "W05"
+    ],
+    "discord.on_message_edit": [
+      "W05"
+    ],
+    "discord.on_poll_vote_add": [
+      "W05"
+    ],
+    "discord.on_poll_vote_remove": [
+      "W05"
+    ],
+    "discord.on_presence_update": [
+      "W05"
+    ],
+    "discord.on_private_channel_pins_update": [
+      "W05"
+    ],
+    "discord.on_private_channel_update": [
+      "W05"
+    ],
+    "discord.on_raw_app_command_permissions_update": [
+      "W05"
+    ],
+    "discord.on_raw_bulk_message_delete": [
+      "W05"
+    ],
+    "discord.on_raw_integration_delete": [
+      "W05"
+    ],
+    "discord.on_raw_member_remove": [
+      "W05"
+    ],
+    "discord.on_raw_message_delete": [
+      "W05"
+    ],
+    "discord.on_raw_message_edit": [
+      "W05"
+    ],
+    "discord.on_raw_poll_vote_add": [
+      "W05"
+    ],
+    "discord.on_raw_poll_vote_remove": [
+      "W05"
+    ],
+    "discord.on_raw_presence_update": [
+      "W05"
+    ],
+    "discord.on_raw_reaction_add": [
+      "W05"
+    ],
+    "discord.on_raw_reaction_clear": [
+      "W05"
+    ],
+    "discord.on_raw_reaction_clear_emoji": [
+      "W05"
+    ],
+    "discord.on_raw_reaction_remove": [
+      "W05"
+    ],
+    "discord.on_raw_thread_delete": [
+      "W05"
+    ],
+    "discord.on_raw_thread_member_remove": [
+      "W05"
+    ],
+    "discord.on_raw_thread_update": [
+      "W05"
+    ],
+    "discord.on_raw_typing": [
+      "W05"
+    ],
+    "discord.on_reaction_add": [
+      "W05"
+    ],
+    "discord.on_reaction_clear": [
+      "W05"
+    ],
+    "discord.on_reaction_clear_emoji": [
+      "W05"
+    ],
+    "discord.on_reaction_remove": [
+      "W05"
+    ],
+    "discord.on_ready": [
+      "W05"
+    ],
+    "discord.on_resumed": [
+      "W05"
+    ],
+    "discord.on_scheduled_event_create": [
+      "W05"
+    ],
+    "discord.on_scheduled_event_delete": [
+      "W05"
+    ],
+    "discord.on_scheduled_event_update": [
+      "W05"
+    ],
+    "discord.on_scheduled_event_user_add": [
+      "W05"
+    ],
+    "discord.on_scheduled_event_user_remove": [
+      "W05"
+    ],
+    "discord.on_shard_connect": [
+      "W05"
+    ],
+    "discord.on_shard_disconnect": [
+      "W05"
+    ],
+    "discord.on_shard_ready": [
+      "W05"
+    ],
+    "discord.on_shard_resumed": [
+      "W05"
+    ],
+    "discord.on_socket_event_type": [
+      "W05"
+    ],
+    "discord.on_socket_raw_receive": [
+      "W05"
+    ],
+    "discord.on_socket_raw_send": [
+      "W05"
+    ],
+    "discord.on_soundboard_sound_create": [
+      "W05"
+    ],
+    "discord.on_soundboard_sound_delete": [
+      "W05"
+    ],
+    "discord.on_soundboard_sound_update": [
+      "W05"
+    ],
+    "discord.on_stage_instance_create": [
+      "W05"
+    ],
+    "discord.on_stage_instance_delete": [
+      "W05"
+    ],
+    "discord.on_stage_instance_update": [
+      "W05"
+    ],
+    "discord.on_subscription_create": [
+      "W05"
+    ],
+    "discord.on_subscription_delete": [
+      "W05"
+    ],
+    "discord.on_subscription_update": [
+      "W05"
+    ],
+    "discord.on_thread_create": [
+      "W05"
+    ],
+    "discord.on_thread_delete": [
+      "W05"
+    ],
+    "discord.on_thread_join": [
+      "W05"
+    ],
+    "discord.on_thread_member_join": [
+      "W05"
+    ],
+    "discord.on_thread_member_remove": [
+      "W05"
+    ],
+    "discord.on_thread_remove": [
+      "W05"
+    ],
+    "discord.on_thread_update": [
+      "W05"
+    ],
+    "discord.on_typing": [
+      "W05"
+    ],
+    "discord.on_user_update": [
+      "W05"
+    ],
+    "discord.on_voice_channel_effect": [
+      "W05"
+    ],
+    "discord.on_voice_state_update": [
+      "W05"
+    ],
+    "discord.on_webhooks_update": [
+      "W05"
+    ],
+    "discord.opus.OpusError": [
+      "W28"
+    ],
+    "discord.opus.OpusNotLoaded": [
+      "W28"
+    ],
+    "discord.opus.is_loaded": [
+      "W28"
+    ],
+    "discord.opus.load_opus": [
+      "W28"
+    ],
+    "discord.ui.ActionRow": [
+      "W12"
+    ],
+    "discord.ui.Button": [
+      "W12"
+    ],
+    "discord.ui.ChannelSelect": [
+      "W12"
+    ],
+    "discord.ui.Checkbox": [
+      "W14"
+    ],
+    "discord.ui.CheckboxGroup": [
+      "W14"
+    ],
+    "discord.ui.Container": [
+      "W13"
+    ],
+    "discord.ui.DynamicItem": [
+      "W12"
+    ],
+    "discord.ui.File": [
+      "W13"
+    ],
+    "discord.ui.FileUpload": [
+      "W14"
+    ],
+    "discord.ui.Item": [
+      "W12"
+    ],
+    "discord.ui.Label": [
+      "W14"
+    ],
+    "discord.ui.LayoutView": [
+      "W13"
+    ],
+    "discord.ui.MediaGallery": [
+      "W13"
+    ],
+    "discord.ui.MentionableSelect": [
+      "W12"
+    ],
+    "discord.ui.Modal": [
+      "W14"
+    ],
+    "discord.ui.RadioGroup": [
+      "W14"
+    ],
+    "discord.ui.RoleSelect": [
+      "W12"
+    ],
+    "discord.ui.Section": [
+      "W13"
+    ],
+    "discord.ui.Select": [
+      "W12"
+    ],
+    "discord.ui.Separator": [
+      "W13"
+    ],
+    "discord.ui.TextDisplay": [
+      "W13"
+    ],
+    "discord.ui.TextInput": [
+      "W14"
+    ],
+    "discord.ui.Thumbnail": [
+      "W13"
+    ],
+    "discord.ui.UserSelect": [
+      "W12"
+    ],
+    "discord.ui.View": [
+      "W12"
+    ],
+    "discord.ui.button": [
+      "W12"
+    ],
+    "discord.ui.select": [
+      "W12"
+    ],
+    "discord.utils.MISSING": [
+      "W04"
+    ],
+    "discord.utils.as_chunks": [
+      "W04"
+    ],
+    "discord.utils.escape_markdown": [
+      "W04"
+    ],
+    "discord.utils.escape_mentions": [
+      "W04"
+    ],
+    "discord.utils.find": [
+      "W04"
+    ],
+    "discord.utils.format_dt": [
+      "W04"
+    ],
+    "discord.utils.get": [
+      "W04"
+    ],
+    "discord.utils.maybe_coroutine": [
+      "W01"
+    ],
+    "discord.utils.oauth_url": [
+      "W26"
+    ],
+    "discord.utils.remove_markdown": [
+      "W04"
+    ],
+    "discord.utils.resolve_invite": [
+      "W17"
+    ],
+    "discord.utils.resolve_template": [
+      "W17"
+    ],
+    "discord.utils.setup_logging": [
+      "W30"
+    ],
+    "discord.utils.sleep_until": [
+      "W01",
+      "W09"
+    ],
+    "discord.utils.snowflake_time": [
+      "W04"
+    ],
+    "discord.utils.time_snowflake": [
+      "W04"
+    ],
+    "discord.utils.utcnow": [
+      "W04"
+    ],
+    "discord.version_info": [
+      "W32"
+    ]
+  },
+  "component_workstreams": {
+    "1": [
+      "W12"
+    ],
+    "2": [
+      "W12"
+    ],
+    "3": [
+      "W12",
+      "W14"
+    ],
+    "4": [
+      "W14"
+    ],
+    "5": [
+      "W12",
+      "W14"
+    ],
+    "6": [
+      "W12",
+      "W14"
+    ],
+    "7": [
+      "W12",
+      "W14"
+    ],
+    "8": [
+      "W12",
+      "W14"
+    ],
+    "9": [
+      "W13"
+    ],
+    "10": [
+      "W13",
+      "W14"
+    ],
+    "11": [
+      "W13"
+    ],
+    "12": [
+      "W13"
+    ],
+    "13": [
+      "W13"
+    ],
+    "14": [
+      "W13"
+    ],
+    "17": [
+      "W13"
+    ],
+    "18": [
+      "W14"
+    ],
+    "19": [
+      "W14"
+    ],
+    "21": [
+      "W14"
+    ],
+    "22": [
+      "W14"
+    ],
+    "23": [
+      "W14"
+    ]
+  }
+}

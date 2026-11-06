@@ -2,6 +2,19 @@
 
 Versions follow [MAJOR.MINOR.PATCH](docs/VERSIONING.md).
 
+## [Unreleased] — planning and verification tooling
+
+- Replace the broad roadmap with 35 workstreams, 215 scope tasks, dependencies
+  and explicit acceptance/failure criteria across the open-ended 0.x series.
+- Record official Discord resource/component/protocol and discord.py public-API
+  inventories with traceable scope mappings and review digests.
+- Add a matching Mermaid view, root roadmap entry point and research register.
+- Add offline source-CI coverage checks, focused audit tests and an explicit
+  read-only upstream drift comparison command.
+
+These changes expand planning/tooling; they do not add the planned Discord APIs
+to the shipped v0.4.1 library.
+
 ## [0.4.1] - 2026-11-04
 
 - Move canonical repository/package/runtime links to YoungLionOrganization.

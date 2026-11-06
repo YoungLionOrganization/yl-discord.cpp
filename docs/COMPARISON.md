@@ -3,6 +3,8 @@
 Reviewed against the current public C++ API on 2026-11-06. The implemented library
 is v0.4.1. This inventory describes usable high-level features, not what could be
 built manually from raw REST/JSON. It does not imply complete discord.py coverage.
+The expanded [roadmap](ROADMAP.md) and [research register](roadmap/RESEARCH.md)
+track the remaining public API/resource families, dependencies and acceptance tests.
 
 | Area | yl-discord.cpp v0.4.1 status |
 | --- | --- |
